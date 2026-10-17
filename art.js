@@ -103,6 +103,34 @@ function updatePose(f,dt){
   P.lean=lerp(P.lean,lean,k);P.hip=lerp(P.hip,hip,k);P.open=lerp(P.open,open,1-Math.exp(-dt*20));
 }
 
+/* ---------------- Armor gear ---------------- */
+const GCOL=[null,'#b98a5a','#d98a3a','#b8c4d8','#4ad0f0','#ffd24a'];
+function shade(h,k){const n=parseInt(h.slice(1),16);let r=n>>16,g=n>>8&255,b=n&255;if(k>0){r+=(255-r)*k;g+=(255-g)*k;b+=(255-b)*k}else{r*=1+k;g*=1+k;b*=1+k}return`rgb(${r|0},${g|0},${b|0})`}
+function metal(c,x0,y0,x1,y1,t){const col=GCOL[t];return grad(c,x0,y0,x1,y1,[shade(col,.45),col,shade(col,-.4)])}
+function armorHelm(c,sp,tier){ // head-local, facing +x
+  const col=GCOL[tier];c.save();c.lineJoin='round';
+  if(tier>=3){poly(c,[-4,-16,2,-30-tier*2,8,-16],tier===5?'#ff4a2a':tier===4?'#4ad0f0':'#c33',shade(col,-.5),1.2)}
+  c.beginPath();c.ellipse(0,-3,20,16,0,Math.PI*1.02,Math.PI*1.98);c.lineTo(20,-3);c.closePath();c.fillStyle=metal(c,-20,-20,20,0,tier);c.fill();c.lineWidth=2;c.strokeStyle=shade(col,-.6);c.stroke();
+  c.fillStyle=shade(col,-.2);c.fillRect(-20,-6,40,5);c.strokeStyle=shade(col,-.6);c.lineWidth=1.5;c.strokeRect(-20,-6,40,5);
+  if(tier>=2){poly(c,[16,-5,22,-4,22,8,18,8],metal(c,16,-5,22,8,tier),shade(col,-.6),1.5)} // nose guard
+  ell(c,0,-14,3.2,3.2,tier>=4?'#fff':'#ffd24a',0,shade(col,-.6));
+  if(tier>=4)glow(c,0,-14,14,tier===5?'#ffd24a':'#4ad0f0',.8);
+  c.restore()}
+function armorChest(c,hw,tier){ // torso-local
+  const col=GCOL[tier];c.save();c.lineJoin='round';
+  c.beginPath();c.ellipse(1,-26,hw*.86,22,0,0,TAU);c.fillStyle=metal(c,-hw,-48,hw,-4,tier);c.fill();c.lineWidth=2.5;c.strokeStyle=shade(col,-.6);c.stroke();
+  c.strokeStyle=shade(col,.5);c.globalAlpha=.7;c.lineWidth=1.5;for(let i=0;i<3;i++){c.beginPath();c.ellipse(1,-26,hw*.86-3-i*7,22-3-i*5,0,.3,Math.PI-.3);c.stroke()}c.globalAlpha=1;
+  c.fillStyle=shade(col,-.3);c.fillRect(-hw*.8,-9,hw*1.7,6);c.strokeStyle=shade(col,-.6);c.lineWidth=1.5;c.strokeRect(-hw*.8,-9,hw*1.7,6);ell(c,0,-6,4.5,4.5,'#ffd24a',0,shade(col,-.6));
+  ell(c,3,-47,10,7,metal(c,-7,-54,13,-40,tier),0,shade(col,-.6));ell(c,hw*.7,-46,8,6,metal(c,0,-54,16,-40,tier),0,shade(col,-.6));
+  if(tier>=3){ell(c,2,-30,5,6,tier===5?'#ff6a3a':'#8af',0,shade(col,-.6));glow(c,2,-30,18,tier===5?'#ffb02a':'#4ad0f0',.7)}
+  c.restore()}
+function armorGlove(c,x,y,r,tier){const col=GCOL[tier];c.save();ell(c,x,y,r+3.5,r+3,metal(c,x-r,y-r,x+r,y+r,tier),0,shade(col,-.6));ell(c,x-r-6,y+1,r*.75,r*.9,shade(col,-.2),0,shade(col,-.6));if(tier>=4)glow(c,x,y,r+8,tier===5?'#ffd24a':'#4ad0f0',.5);c.restore()}
+function armorBoot(c,fx,fy,tier,knee){const col=GCOL[tier];c.save();ell(c,fx+7,fy-1,15,7.5,metal(c,fx-8,fy-8,fx+22,fy+6,tier),0,shade(col,-.6));ell(c,(fx+knee[0])/2+1,(fy+knee[1])/2+4,8,10,metal(c,fx-8,fy-14,fx+8,fy+4,tier),0,shade(col,-.6),0);c.restore()}
+function armorIcon(c,kind,tier,x,y,s,ghost){c.save();c.translate(x,y);c.scale(s,s);if(ghost)c.globalAlpha=.35;
+  if(kind==='helm'){c.translate(0,10);armorHelm(c,null,tier)}
+  else if(kind==='chest'){c.translate(0,24);armorChest(c,24,tier)}
+  else{armorGlove(c,-14,-4,10,tier);armorBoot(c,0,14,tier,[-5,-5])}
+  c.restore()}
 /* ---------------- Creature drawing ---------------- */
 function tailDraw(c,sp,t,bx,by,len,th,col,dark,fluff,wave){
   let px=bx,py=by,n=10;const pts=[];
@@ -281,11 +309,13 @@ function drawFighter(c,f){
   const leg=(hx,tg,col,dk)=>{const k=ik(hx,hipY+4,tg[0],tg[1],31,31,-1);
     limb(c,hx,hipY+4,k[0],k[1],lw+1,col,dk,ah);limb(c,k[0],k[1],k[2],k[3],lw,col,dk,ah);
     const fx=k[2],fy=k[3];ell(c,fx+7,fy-1,13,6,dk,0,'rgba(0,0,0,.4)');ell(c,fx+6,fy-3,11,4,col);
+    if(f.gear&&f.gear.limbs>0)armorBoot(c,fx,fy,f.gear.limbs,[k[0],k[1]]);
     if(sp.claws){for(let i=0;i<3;i++)poly(c,[fx+15+i*0,fy-5+i*3,fx+22,fy-3+i*3,fx+14,fy-1+i*3],'#fff')}};
   const arm=(s,tg,col,dk,front)=>{const k=ik(s[0],s[1],tg[0],tg[1],25,24,1);
     limb(c,s[0],s[1],k[0],k[1],lw-1,col,dk,ah);limb(c,k[0],k[1],k[2],k[3],lw-2,col,dk,ah);
     const r=sp.id==='golem'?11:sp.id==='yeti'?10:8;
     ell(c,k[2],k[3],r,r,sp.id==='golem'?sp.c3:col,0,dk);
+    if(f.gear&&f.gear.limbs>0)armorGlove(c,k[2],k[3],r,f.gear.limbs);
     if(sp.claws)for(let i=0;i<3;i++)poly(c,[k[2]+r-2,k[3]-4+i*4,k[2]+r+7,k[3]-2+i*4,k[2]+r-2,k[3]+1+i*4],'#fff');
     if(f.shield&&f.atk==null)glow(c,k[2],k[3],18,sp.glow,.6);
     if(front&&f.wp&&f.wp.id!=='fists'&&!(f.wp.style==='throw'&&f.boomOut))weaponHeld(c,f,k[2],k[3])};
@@ -297,10 +327,11 @@ function drawFighter(c,f){
   c.beginPath();c.ellipse(0,-27,hw,31,0,0,TAU);c.fillStyle=grad(c,-hw,0,hw,0,[ad,ac,ac,ah]);c.fill();c.strokeStyle=ad;c.lineWidth=2.5;c.stroke();
   ell(c,hw*.35,-24,hw*.55,24,grad(c,0,-48,0,0,[ah,ac]),0,null);c.globalAlpha*=.55;
   drawTorsoExtra(c,sp,f,hw);c.globalAlpha/=.55;
+  if(f.gear&&f.gear.chest>0)armorChest(c,hw,f.gear.chest);
   c.restore();
   // head
   c.save();c.translate(hd[0],hd[1]);c.rotate(L*.6+(f.stun>0?-.2:0)+Math.sin(t*3.2)*.02);
-  drawHead(c,sp,f,P);c.restore();
+  drawHead(c,sp,f,P);if(f.gear&&f.gear.helm>0)armorHelm(c,sp,f.gear.helm);c.restore();
   leg(8,P.ff,ac,ad);
   arm(sh,P.hf,ac,ad,true);
   if(f.flash>0){glow(c,0,-70,70,'#fff',Math.min(1,f.flash*5))}
