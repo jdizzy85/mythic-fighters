@@ -30,4 +30,6 @@ Battle mode with 2+ keyboard players:
 - Touch player: on-screen buttons (only shown when a TOUCH slot exists)
 - Drop through a thin ledge: hold BLOCK + press JUMP
 
+Gamepad (Xbox / standard mapping; also iPad Safari over Bluetooth): left stick or D-pad move, A / D-pad up / stick up jump, X close, Y ranged, B kick, RB weapon skill, RT ultimate, LB block (hold), LT dodge, right-stick click or Back nitro, Start pause. Menus: D-pad/stick move, A confirm, B back, LB/RB change setup choices. In Battle, set slots to GAMEPAD 1-4 (auto-assigned when a controller connects). Touch buttons hide while a controller is active.
+
 See BALANCE.md for the simulation-based difficulty tuning.
