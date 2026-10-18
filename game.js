@@ -36,7 +36,7 @@ function unlockLevel(i){return REWARD.indexOf(SPECIES[i].id)+1}
 /* ---------- hero progression ---------- */
 const UPS=[
  {k:'hp',g:'LIFE',gc:'#ff6a7a',n:'Max Health',d:'More max life points',f:l=>'+'+6*l+'% life'},
- {k:'regen',g:'LIFE',gc:'#ff6a7a',n:'Regeneration',d:'Heal a little every second in battle',f:l=>'+'+(.15*l).toFixed(2)+'% life/sec'},
+ {k:'regen',g:'LIFE',gc:'#ff6a7a',n:'Regeneration',d:'Heal a little every second in battle',f:l=>'+'+(.15*l/2).toFixed(3).replace(/0$/,'')+'% life/sec'},
  {k:'steal',g:'LIFE',gc:'#ff6a7a',n:'Lifesteal',d:'Heal for part of the damage you deal',f:l=>(1.2*l).toFixed(1)+'% of damage'},
  {k:'def',g:'ARMOR',gc:'#7ac8ff',n:'Armor Plating',d:'More armor = less damage taken',f:l=>'+'+3*l+' armor'},
  {k:'spd',g:'SPEED',gc:'#c8ff5a',n:'Move Speed',d:'Run and jump faster',f:l=>'+'+(2.5*l).toFixed(1)+'% speed'},
@@ -52,7 +52,7 @@ const gearArmor=()=>GEAR.reduce((a,g)=>a+g.per*save.armor[g.k],0);
 const armRed=a=>Math.min(.6,a/(a+120));
 function hs(id){let h=save.heroes[id];if(!h||typeof h!=='object')h=save.heroes[id]={};h.xp=+h.xp||0;h.lvl=+h.lvl||1;h.pts=+h.pts||0;h.up=h.up||{};UPS.forEach(u=>h.up[u.k]=+h.up[u.k]||0);return h}
 function addXP(id,n){const h=hs(id),from=h.lvl;h.xp+=n;while(h.lvl<MAXLV&&h.xp>=xpNeed(h.lvl)){h.xp-=xpNeed(h.lvl);h.lvl++;h.pts+=h.lvl%5===0?2:1}if(h.lvl>=MAXLV)h.xp=0;return h.lvl-from}
-function statsOf(id){const u=hs(id).up;return{hp:1+.06*u.hp,atk:1+.05*u.atk,armor:gearArmor()+3*u.def,spd:1+.025*u.spd,en:1+.1*u.en,cd:1-.04*u.cd,wp:1+.06*u.wp,regen:.0015*u.regen,steal:.012*u.steal,aspd:1+.03*u.aspd}}
+function statsOf(id){const u=hs(id).up;return{hp:1+.06*u.hp,atk:1+.05*u.atk,armor:gearArmor()+3*u.def,spd:1+.025*u.spd,en:1+.1*u.en,cd:1-.04*u.cd,wp:1+.06*u.wp,regen:.0015*u.regen/HPK,steal:.012*u.steal,aspd:1+.03*u.aspd}}
 function spentPts(id){const u=hs(id).up;return UPS.reduce((a,x)=>a+u[x.k],0)}
 const pointCost=()=>120+30*save.bought;
 
@@ -92,7 +92,7 @@ function equipped(heroIdx){const o=QS.get('w');if(o&&WI[o])return WI[o];const id
 const CULT={
  dragon:{name:'Dragon Rage',type:'buff',buff:'atk',time:7,col:'#ff8a1f',cd:13,desc:'+40% damage for 7s'},
  minotaur:{name:'Earth Stomp',type:'nova',dmg:16,rad:190,col:'#ffb347',cd:11,desc:'Shockwave stomp all around'},
- unicorn:{name:'Healing Light',type:'heal',pct:28,col:'#ff9ae8',cd:14,desc:'Heal 28% health'},
+ unicorn:{name:'Healing Light',type:'heal',pct:14,col:'#ff9ae8',cd:14,desc:'Heal 14% health'},
  centaur:{name:'Sky Leap',type:'leap',dmg:20,rad:150,speed:420,col:'#ffe27a',cd:10,desc:'Leap high and crash down'},
  werewolf:{name:'Moon Howl',type:'buff',buff:'spd',time:7,col:'#b9c8ff',cd:13,desc:'Faster + stronger for 7s'},
  kraken:{name:'Ink Wave',type:'proj',dmg:15,speed:420,r:40,col:'#b66bff',kind:'ink',cd:10,desc:'Big slow wave of ink'},
@@ -230,7 +230,8 @@ const EDGES=['jump','punch','dodge','ult','ranged','rage'];
 const ATK={punch:{dur:.3,hs:.07,he:.18,dmg:5,range:82,kb:190,up:0,stun:.28,en:7}};
 const SPDUR={proj:.65,dash:.7,slam:.85,flurry:.95,spin:.8,heal:.85,buff:.75,nova:.85,leap:1.7};
 function mkF(idx,x,face,o){return armorInit(mkF0(idx,x,face,o))}
-function mkF0(idx,x,face,o){o=o||{};const sp=SPECIES[idx],st=o.st||{},maxhp=100*sp.hp*(o.hpm||1)*(st.hp||1);
+const HPK=2; // base life multiplier (fights last ~2x as long); per-second/per-hit absolute sources below are divided by it
+function mkF0(idx,x,face,o){o=o||{};const sp=SPECIES[idx],st=o.st||{},maxhp=HPK*100*sp.hp*(o.hpm||1)*(st.hp||1);
   return{idx,sp,team:o.team||0,inv:0,dropT:0,plat:null,chain:0,chainT:0,revive:!!o.revive,sy:groundY(x),name:o.name||'',x,y:groundY(x),vx:0,vy:0,face,hp:maxhp,maxhp,chip:maxhp,en:o.en==null?25:o.en,combo:0,comboT:0,maxCombo:0,atk:null,stun:0,dodgeT:0,dodgeCd:0,shield:false,sh:100,ko:false,rot:0,rotV:0,t:Math.random()*5,
     sc:sp.sc*(o.scale||1),in:{},buf:{},ai:o.ai||null,pose:newPose(),flash:0,onGround:true,boss:!!o.boss,player:!!o.player,lock:0,dmgM:(o.dmgM||1)*(st.atk||1),hitsTaken:0,rdy:false,defM:(o.defM||1),spdM:(o.spdM||1)*(st.spd||1),enM:st.en||1,cdM:(o.cdM||1)*(st.cd||1),wpM:st.wp||1,wp:o.wp||WI.fists,cd:{ult:0,ranged:0},cdMax:{ult:1,ranged:1},rage:0,rageT:0,sq:0,sqv:0,nanFix:0,armor:(o.armor||0)+(st.armor||0),ap:0,apMax:0,apT:0,aspd:(o.aspd||1)*(st.aspd||1),regen:st.regen||0,steal:st.steal||0,gear:o.gear||null,phase:1,buffs:{atk:0,spd:0,def:0},boomOut:false,aura:o.aura||null,tag:o.tag||'',_a:(o.armor||0)+(st.armor||0)}}
 function armorInit(f){f.apMax=f.armor>0?18+f.armor*1.2:0;f.ap=f.apMax;return f}
@@ -266,7 +267,7 @@ function startAtk(f,type){
     SND.play('swing');f.vx=f.face*(type==='punch'?(d.style==='thrust'?150:110):70)}
   return true}
 /* ---------- RAGE ---------- */
-const RAGE={max:100,dur:10,flat:.7,dmgTaken:.45,dmgDealt:.28,block:3,dodge:6,jump:1.118,spd:1.3,aspd:1.3,atk:1.3};
+const RAGE={max:100,dur:10,flat:.35,dmgTaken:.225,dmgDealt:.14,block:1.5,dodge:3,jump:1.118,spd:1.3,aspd:1.3,atk:1.3};
 function addRage(f,n){if(!f||f.ko||f.out||f.rageT>0||!(n>0)||G.state==='end')return;const was=f.rage;f.rage=Math.min(RAGE.max,f.rage+n);
   if(was<RAGE.max&&f.rage>=RAGE.max){f.rageFull=0;if(f.player||(G.battle&&f.touch)){SND.play('ready');pop(f.x,f.y-190*f.sc,'RAGE READY!','#ff9a3a',22)}}}
 function activateRage(f){if(f.ko||f.out||f.rageT>0||f.rage<RAGE.max||G.state!=='fight')return false;
@@ -530,7 +531,7 @@ const PERKS=[
  {id:'spd',n:'+8% SPEED',d:'Move faster and attack 6% faster',tag:'SPD',col:'#c8ff5a',fn:p=>{p.spdM*=1.08;p.aspd*=1.06}},
  {id:'steal',n:'+4% LIFESTEAL',d:'Heal from damage you deal',tag:'STL',col:'#ff6a9a',fn:p=>{p.steal+=.04}},
  {id:'maxhp',n:'+20% MAX LIFE',d:'More max life, and heal that much',tag:'HP',col:'#ff6a7a',fn:p=>{const d=p.maxhp*.2;p.maxhp+=d;p.hp+=d;p.chip=p.hp}},
- {id:'regen',n:'+0.4% REGEN',d:'Heal slowly while fighting',tag:'REG',col:'#5aff9a',fn:p=>{p.regen+=.004}},
+ {id:'regen',n:'+0.2% REGEN',d:'Heal slowly while fighting',tag:'REG',col:'#5aff9a',fn:p=>{p.regen+=.004/HPK}},
  {id:'ultr',n:'ULT READY + CHARGE',d:'Refresh your ultimate and recharge it 25% faster',tag:'ULT',col:'#b66bff',fn:p=>{p.cd.ult=0;p.enM*=1.25}}];
 function pickPerks(n){const a=PERKS.slice(),o=[];while(o.length<n&&a.length)o.push(a.splice((Math.random()*a.length)|0,1)[0]);return o}
 function initRound(){
@@ -818,7 +819,7 @@ const DAILY_POOL=[
  {id:'perfect1',t:'Win a fight without taking a hit',ev:'perfect',tgt:1,r:{c:80,x:70,p:1}},
  {id:'ko8',t:'Defeat 8 enemies',ev:'ko',tgt:8,r:{c:60,x:50}},
  {id:'battle2',t:'Play 2 Battle matches',ev:'battle',tgt:2,r:{c:50,x:45}},
- {id:'dmg800',t:'Deal 800 damage',ev:'damage',tgt:800,r:{c:55,x:50}},
+ {id:'dmg800',t:'Deal 1600 damage',ev:'damage',tgt:1600,r:{c:55,x:50}},
  {id:'block15',t:'Block 15 attacks',ev:'block',tgt:15,r:{c:45,x:40}},
  {id:'dodge10',t:'Dodge 10 attacks',ev:'dodge',tgt:10,r:{c:50,x:45}}];
 const DP={};DAILY_POOL.forEach(d=>DP[d.id]=d);
@@ -1048,7 +1049,7 @@ const pauseUI=mkScene({btns:vmenu([['RESUME',()=>{G.paused=false}],['RESTART',()
 const TCOL=['#ff4a4a','#4a8aff','#4aff7a','#ffd24a','#c04aff','#4af0ff'],TNAME=['RED','BLUE','GREEN','YELLOW','PURPLE','CYAN'];
 const BMODES={ffa6:{n:6,name:'FREE-FOR-ALL (6)',team:i=>i},ffa4:{n:4,name:'FREE-FOR-ALL (4)',team:i=>i},ffa3:{n:3,name:'FREE-FOR-ALL (3)',team:i=>i},'2v2v2':{n:6,name:'TEAMS 2v2v2',team:i=>(i/2)|0},'3v3':{n:6,name:'TEAMS 3v3',team:i=>(i/3)|0},'2v2':{n:4,name:'TEAMS 2v2',team:i=>(i/2)|0},'1v1':{n:2,name:'DUEL 1v1',team:i=>i}};
 const BMORD=['ffa6','ffa4','ffa3','2v2v2','3v3','2v2','1v1'];
-const BRULES={stocks:{name:'STOCKS (3 lives)',lim:3},race:{name:'KO RACE (first to 5)',lim:5},time:{name:'TIMED (90 sec)',lim:90}},BRORD=['stocks','race','time'];
+const BRULES={stocks:{name:'STOCKS (3 lives)',lim:3},race:{name:'KO RACE (first to 5)',lim:5},time:{name:'TIMED (3 min)',lim:180}},BRORD=['stocks','race','time'];
 const CTLS=['AI','P1 KEYS','P2 KEYS','TOUCH','PAD 1','PAD 2','PAD 3','PAD 4','OFF'],CTLN={'PAD 1':'GAMEPAD 1','PAD 2':'GAMEPAD 2','PAD 3':'GAMEPAD 3','PAD 4':'GAMEPAD 4','AI':'CPU (AI)','P1 KEYS':'P1: WASD KEYS','P2 KEYS':'P2: ARROW KEYS','TOUCH':'TOUCH SCREEN','OFF':'EMPTY'};
 const KM1={KeyA:'left',KeyD:'right',KeyW:'jump',KeyS:'shield',KeyF:'punch',KeyG:'ranged',KeyQ:'dodge',KeyT:'ult',KeyR:'rage',KeyY:'rage'};
 const KM2={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'jump',ArrowDown:'shield',Numpad1:'punch',Period:'punch',Numpad2:'ranged',Slash:'ranged',Numpad0:'dodge',KeyM:'dodge',Numpad5:'ult',Quote:'ult',Numpad3:'rage',Comma:'rage'};
@@ -1424,7 +1425,7 @@ S.armory=mkScene({cols:6,cont:null,contLabel:'FIGHT!',backFn:null,hero:0,view:1,
     this.act.label=own?(eq?'EQUIPPED ✓':'EQUIP'):'BUY ('+w.cost+' COINS)';this.act.disabled=!own&&save.coins<w.cost;this.act.clickLocked=true;
     this.cb.label=this.contLabel;this.cb.hidden=!this.cont}});
 function openGear(back){S.gear.backFn=back;S.gear.hero=sel.hero;S.gear.focus=0;go(S.gear)}
-function heroStats(id){const sp=SPECIES[SPI[id]],st=statsOf(id);return{hp:Math.round(100*sp.hp*st.hp),armor:st.armor,red:Math.round(armRed(st.armor)*100),spd:Math.round((st.spd-1)*1000)/10,aspd:Math.round((st.aspd-1)*100)}}
+function heroStats(id){const sp=SPECIES[SPI[id]],st=statsOf(id);return{hp:Math.round(HPK*100*sp.hp*st.hp),armor:st.armor,red:Math.round(armRed(st.armor)*100),spd:Math.round((st.spd-1)*1000)/10,aspd:Math.round((st.aspd-1)*100)}}
 S.upgrade=mkScene({cols:1,backFn:null,hero:0,note:'',noteT:0,
   back(){this.backFn&&this.backFn()},
   enter(){const U=this;SND.music('menu');
