@@ -280,8 +280,10 @@ function drawFighter(c,f){
   c.save();c.globalAlpha=.32*(1-Math.min(1,h/260));c.fillStyle='#000';c.beginPath();c.ellipse(f.x,gy+3,Math.max(5,40*sc*(1-h/520)),8*sc,0,0,TAU);c.fill();c.restore();
   c.save();c.translate(f.x,f.y);
   if(f.rot){c.translate(0,38*sc*Math.min(1,Math.abs(f.rot)/1.5));c.translate(0,-50*sc);c.rotate(f.rot);c.translate(0,50*sc)}
-  c.scale(f.face*sc,sc);
+  {const q=f.sq||0;c.scale(f.face*sc*(1+q*.22),sc*(1-q*.3))} // squash & stretch (landing / jump / hurt)
   if(f.dodgeT>0)c.globalAlpha=.4;if(f.inv>0&&Math.sin(f.t*28)>0)c.globalAlpha=.35;
+  if(f.ko&&f.koT>.7)c.globalAlpha*=Math.max(.02,1-(f.koT-.7)/.6);
+  if(f.rageT>0)glow(c,0,-70,105,'#ff5a1a',.4+.15*Math.sin(f.t*16));
   const hipY=-62+P.hip,L=P.lean,cl=Math.cos(L),sl=Math.sin(L);
   const tr=(x,y)=>[x*cl-y*sl,hipY+x*sl+y*cl];
   const hw=sp.bw,sh=tr(4,-46),hd=tr(6,-70);
@@ -344,7 +346,7 @@ function drawFighter(c,f){
 
 /* ---------------- Particles ---------------- */
 const parts=[];
-function spawnP(x,y,vx,vy,life,size,col,kind,grav){if(parts.length>700)parts.shift();parts.push({x,y,vx,vy,life,max:life,size,col,kind:kind||'glow',grav:grav||0,rot:rnd(0,TAU)})}
+function spawnP(x,y,vx,vy,life,size,col,kind,grav){if(parts.length>520)parts.shift();parts.push({x,y,vx,vy,life,max:life,size,col,kind:kind||'glow',grav:grav||0,rot:rnd(0,TAU)})}
 function burst(x,y,n,col,spd,size,kind,grav){for(let i=0;i<n;i++){const a=rnd(0,TAU),s=rnd(.3,1)*spd;spawnP(x,y,Math.cos(a)*s,Math.sin(a)*s,rnd(.3,.7),rnd(.6,1)*size,col,kind,grav)}}
 function ring(x,y,col,size){spawnP(x,y,0,0,.35,size,col,'ring')}
 function updateParts(dt){for(let i=parts.length-1;i>=0;i--){const p=parts[i];p.life-=dt;if(p.life<=0){parts.splice(i,1);continue}p.vy+=p.grav*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;p.rot+=dt*4}}
@@ -353,6 +355,7 @@ function drawParts(c){
   for(const p of parts){const k=p.life/p.max;
     if(p.kind==='ring'){c.globalCompositeOperation='lighter';c.globalAlpha=k;c.strokeStyle=p.col;c.lineWidth=4*k+1;c.beginPath();c.arc(p.x,p.y,p.size*(1.2-k),0,TAU);c.stroke()}
     else if(p.kind==='star'){c.globalCompositeOperation='lighter';c.globalAlpha=k;c.fillStyle=p.col;c.save();c.translate(p.x,p.y);c.rotate(p.rot);const s=p.size*k;poly(c,[0,-s*2,s*.5,-s*.5,s*2,0,s*.5,s*.5,0,s*2,-s*.5,s*.5,-s*2,0,-s*.5,-s*.5],p.col);c.restore()}
+    else if(p.kind==='spark'){c.globalCompositeOperation='lighter';c.globalAlpha=k;c.strokeStyle=p.col;c.lineWidth=Math.max(1.2,p.size*.8*k);c.lineCap='round';c.beginPath();c.moveTo(p.x,p.y);c.lineTo(p.x-p.vx*.045,p.y-p.vy*.045);c.stroke()}
     else if(p.kind==='dust'){c.globalCompositeOperation='source-over';c.globalAlpha=k*.5;c.fillStyle=p.col;c.beginPath();c.arc(p.x,p.y,p.size*(2-k),0,TAU);c.fill()}
     else{c.globalCompositeOperation='lighter';c.globalAlpha=k;c.fillStyle=p.col;c.beginPath();c.arc(p.x,p.y,p.size*(.4+k*.6),0,TAU);c.fill()}
   }
@@ -487,6 +490,7 @@ function weaponHeld(c,f,hx,hy){
     const he=(a.he||.34)+.05,hs=a.hs||.12;
     if(a.t>=hs&&a.t<he+.12||a.kind==='spin'){const L=W.len*.95;c.save();c.globalCompositeOperation='lighter';c.lineCap='round';
       for(let i=0;i<3;i++){c.strokeStyle=i===0?'rgba(255,255,255,.7)':f.sp.glow;c.globalAlpha=.5-i*.14;c.lineWidth=14-i*4;c.beginPath();c.arc(0,0,L-i*3,ang-1.1-i*.15,ang,false);c.stroke()}c.restore()}}
+  if(a&&a.style===W.style&&W.style==='thrust'&&a.t>=a.hs&&a.t<(a.he||.2)+.1){const L=W.len+34,k=1-clamp((a.t-a.hs)/((a.he||.2)+.1-a.hs),0,1);c.save();c.globalCompositeOperation='lighter';c.rotate(ang);c.lineCap='round';for(let i=0;i<3;i++){c.globalAlpha=(.55-i*.15)*k;c.strokeStyle=i?f.sp.glow:'#fff';c.lineWidth=11-i*3.5;c.beginPath();c.moveTo(L*.2,0);c.lineTo(L+i*8,0);c.stroke()}c.restore()}
   const pull=a&&a.style==='shoot'?(a.t<a.hs?lerp(6,-16,a.t/a.hs):a.t<a.hs+.12?4:6):6;
   drawWeapon(c,W,ang,f.sp.glow,pull,!(a&&a.style==='shoot'&&a.t>a.hs&&a.t<a.dur*.7));
   c.restore()
