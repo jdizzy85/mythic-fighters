@@ -21,3 +21,9 @@ Weapon check (AI mirror vs Star Sword, 1v1, 120 fights each): win rates roughly 
 ## v6 (Kick, Nitro and Weapon Skills removed)
 Controls are now only: move, jump, close attack, ranged attack (cooldown), ultimate (cooldown), block, dodge. Weapons were re-tuned with the AI mirror sim (every weapon now wins about 45-69% vs the Star Sword; the old kick/skill damage was folded into base weapon damage; heavy melee weapons were raised, long-range weapons trimmed). Enemy damage per stage `dmK` .0175 -> .0145, enemy HP slope .033 -> .03 and boss damage .9 -> .72. Average upgraded player story win rate: L13 ~53%, L15 ~40%, L20 ~20%, L25 ~17%, L30 ~5% (skilled: 90% / 75% / 53% / 38% / 25%).
 Upgrades: "Nitro Charge" became "Ultimate Charge" (ultimate recharges faster); Weapon Power / Cooldowns descriptions updated; the Endless perk and Nitro Tonic boost were retargeted (ult refresh + faster recharge, Haste Tonic = -30% cooldowns). Saved games keep their upgrade levels; old daily missions that used weapon skills are swapped for other missions automatically.
+
+## v7 (Rage, cooldowns, bug hunt)
+- Ranged cooldown: bolt 1.9 s, ranged weapon 1.2 s, thrown 0.7 s (x cooldown upgrades). Ultimate: max(12 s, creature value). Ultimates are always >= 6x the ranged cooldown.
+- Rage tuning (RAGE constants in game.js): +0.45 x damage taken (+0.7 flat), +0.28 x damage dealt (+0.4 flat), +3 per block, +6 per dodge. In AI-vs-AI sims a fighter earns a full bar about every 30 s in 1v1 and every 26 s in 6-player free-for-all (about 1.2-1.5 rages per fighter per minute). Rage effects: +25% jump height, x1.3 speed / attack speed / damage for 10 s.
+- Weapon mirror sim after the changes (60 matches per weapon each side, AI uses rage): every weapon wins 45-68% vs the Star Sword.
+- Story sim (average upgraded player): L13 ~65%, L15 ~35%, L20 ~13%, L25 ~13%; skilled: L13 80%, L15 53%, L20 35%, L25 15%, L30 ~20%. Enemy damage per stage dmK .0145 -> .0138.
