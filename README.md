@@ -22,14 +22,20 @@ Play: https://jdizzy85.github.io/mythic-fighters/
 ## Controls
 Solo / 1 keyboard player (also Story, Endless, Duel):
 Move A/D or arrows, Jump W/Up/Space, Close Attack J/Z, Ranged Attack H/B, Block S/Down/Shift, Dodge U/V,
-Ultimate O, Pause P/Esc. On iPad use the labeled on-screen buttons.
+Ultimate O, Rage R, Pause P/Esc. On iPad use the labeled on-screen buttons.
 
 Battle mode with 2+ keyboard players:
-- P1: A/D move, W jump, S block, F close, G ranged, T ultimate, Q dodge
-- P2: arrows move/jump/block, Numpad1 (or .) close, Numpad2 (or /) ranged, Numpad5 (or ') ultimate, Numpad0 (or M) dodge
+- P1: A/D move, W jump, S block, F close, G ranged, T ultimate, R or Y rage, Q dodge
+- P2: arrows move/jump/block, Numpad1 (or .) close, Numpad2 (or /) ranged, Numpad5 (or ') ultimate, Numpad3 (or ,) rage, Numpad0 (or M) dodge
 - Touch player: on-screen buttons (only shown when a TOUCH slot exists)
 - Drop through a thin ledge: hold BLOCK + press JUMP
 
-Gamepad (Xbox / standard mapping; also iPad Safari over Bluetooth): left stick or D-pad move, A / D-pad up / stick up jump, X close, Y ranged, RT ultimate, LB block (hold), LT dodge, Start pause. Menus: D-pad/stick move, A confirm, B back, LB/RB change setup choices. In Battle, set slots to GAMEPAD 1-4 (auto-assigned when a controller connects). Touch buttons hide while a controller is active.
+Gamepad (Xbox / standard mapping; also iPad Safari over Bluetooth): left stick or D-pad move, A / D-pad up / stick up jump, X close, Y ranged, RT ultimate, RB rage, LB block (hold), LT dodge, Start pause. Menus: D-pad/stick move, A confirm, B back, LB/RB change setup choices. In Battle, set slots to GAMEPAD 1-4 (auto-assigned when a controller connects). Touch buttons hide while a controller is active.
 
 See BALANCE.md for the simulation-based difficulty tuning.
+
+## v7
+- RAGE bar for every fighter (1v1 HUD, 6-player HUD, touch button that glows when full). Fills from damage taken/dealt, successful blocks and dodges; when full press RAGE (touch button, R / P1: R or Y / P2: Numpad3 or `,` / gamepad RB) for 10 s: +25% jump height, +30% move speed, +30% attack speed, +30% attack power, flame aura; the bar drains with the timer and must refill. The AI uses it when a foe is close.
+- Ranged cooldown 1.2-1.9 s (0.7 s thrown); ultimates are at least 12 s. Both are shown on HUD chips and touch buttons.
+- Polish: squash and stretch, dust, hit sparks, thrust trails, ultimate wind-up + screen effects, KO fade, eased menu transitions.
+- Robustness: NaN / out-of-bounds guard with respawn, camera always frames every living fighter, per-fighter draw isolation, touch UI re-asserted every frame, resize guards. See BALANCE.md for the bug hunt notes.
