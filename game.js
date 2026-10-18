@@ -38,9 +38,9 @@ const UPS=[
  {k:'spd',g:'SPEED',gc:'#c8ff5a',n:'Move Speed',d:'Run and jump faster',f:l=>'+'+(2.5*l).toFixed(1)+'% speed'},
  {k:'aspd',g:'SPEED',gc:'#c8ff5a',n:'Attack Speed',d:'Swing, shoot and cast faster',f:l=>'+'+3*l+'% speed'},
  {k:'atk',g:'POWER',gc:'#ffb347',n:'Attack Power',d:'All your attacks hit harder',f:l=>'+'+5*l+'% damage'},
- {k:'wp',g:'POWER',gc:'#ffb347',n:'Weapon Power',d:'Weapon + weapon skill damage',f:l=>'+'+6*l+'% weapon'},
- {k:'cd',g:'POWER',gc:'#ffb347',n:'Cooldowns',d:'Skills, ultimate, ranged recharge faster',f:l=>'-'+4*l+'% cooldown'},
- {k:'en',g:'POWER',gc:'#ffb347',n:'Nitro Charge',d:'Nitro bar fills faster',f:l=>'+'+10*l+'% charge'}];
+ {k:'wp',g:'POWER',gc:'#ffb347',n:'Weapon Power',d:'Weapon damage (melee swings and ranged weapon shots)',f:l=>'+'+6*l+'% weapon'},
+ {k:'cd',g:'POWER',gc:'#ffb347',n:'Cooldowns',d:'Ultimate and ranged attack recharge faster',f:l=>'-'+4*l+'% cooldown'},
+ {k:'en',g:'POWER',gc:'#ffb347',n:'Ultimate Charge',d:'Ultimate recharges faster',f:l=>'+'+10*l+'% faster'}];
 const UPMAX=10,MAXLV=40,xpNeed=l=>40+14*(l-1);
 const GEAR=[{k:'helm',n:'HELM',per:3},{k:'chest',n:'CHEST ARMOR',per:6},{k:'limbs',n:'GLOVES & BOOTS',per:3}];
 const GTIER=['None','Leather','Bronze','Iron','Mythril','Dragon Gold'],GCOST=[100,200,350,550,800],GMAX=5;
@@ -54,44 +54,34 @@ const pointCost=()=>120+30*save.bought;
 
 /* ---------- weapons ---------- */
 const WEAPONS=[
- {id:'fists',name:'Mythic Fists',style:'punch',len:0,idle:0,dmg:5,range:82,dur:.3,hs:.07,he:.18,kb:190,up:0,stun:.28,en:7,cost:0,lvl:0,desc:'Fast and reliable. Your creature\'s own power.',
-  skill:{name:'Power Punch',type:'dash',dmg:14,speed:700,cd:7,col:'#ffd27a',kind:'dust',wskill:1,desc:'Charge and land a huge punch'}},
- {id:'sword',name:'Star Sword',style:'slash',len:62,idle:-1,dmg:6.5,range:102,dur:.36,hs:.09,he:.2,kb:210,up:0,stun:.28,en:7,cost:0,lvl:0,desc:'Balanced blade with a wide slash.',
-  skill:{name:'Crescent Wave',type:'proj',dmg:12,speed:700,r:24,cd:6,col:'#bfe9ff',kind:'crescent',wskill:1,desc:'Fire a glowing slash wave'}},
- {id:'axe',name:'Thunder Axe',style:'chop',len:58,idle:-1.1,dmg:8.5,range:96,dur:.5,hs:.16,he:.3,kb:280,up:0,stun:.36,en:8,cost:150,lvl:3,desc:'Slow, heavy chops that hit hard.',
-  skill:{name:'Whirlwind',type:'spin',dmg:6,rad:110,cd:8,col:'#ffe27a',wskill:1,desc:'Spin and hit both sides 4 times'}},
- {id:'spear',name:'Sky Spear',style:'thrust',len:100,idle:-.5,dmg:6,range:142,dur:.4,hs:.12,he:.22,kb:170,up:0,stun:.26,en:7,cost:250,lvl:6,desc:'Longest reach. Poke from afar!',
-  skill:{name:'Lunge',type:'dash',dmg:15,speed:820,cd:6,col:'#ffffff',kind:'glow',wskill:1,desc:'Dash forward with a piercing thrust'}},
- {id:'staff',name:'Moon Staff',style:'slash',len:74,idle:-1.45,dmg:5.5,range:108,dur:.36,hs:.1,he:.2,kb:180,up:0,stun:.3,en:12,cost:350,lvl:9,desc:'Magic staff. Hits charge your nitro faster.',
-  skill:{name:'Starlight Heal',type:'heal',pct:22,cd:12,col:'#7aff9a',wskill:1,desc:'Heal 22% of your health'}},
- {id:'hammer',name:'Titan Hammer',style:'chop',len:62,idle:-1,dmg:12.5,range:94,dur:.68,hs:.26,he:.38,kb:380,up:90,stun:.5,en:9,heavy:1,cost:450,lvl:12,desc:'Super slow but smashes and launches foes.',
-  skill:{name:'Earth Smash',type:'slam',dmg:18,cd:9,col:'#ffb36a',kind:'rock',wskill:1,desc:'Smash the ground with shockwaves'}},
- {id:'shield',name:'Guardian Shield',style:'thrust',len:24,idle:0,dmg:4.5,range:70,dur:.32,hs:.08,he:.18,kb:240,up:0,stun:.4,en:6,cost:300,lvl:15,desc:'Bash foes. Blocking drains less shield.',
-  skill:{name:'Shield Bash',type:'dash',dmg:11,speed:700,cd:8,col:'#9ad8ff',kind:'glow',guard:3,wskill:1,desc:'Charge in and take less damage for 3s'}},
- {id:'bow',name:'Wind Bow',style:'shoot',len:40,idle:0,dmg:6,range:480,dur:.45,hs:.18,he:.3,kb:120,up:0,stun:.22,en:6,cost:500,lvl:18,ranged:1,desc:'Shoot arrows from across the arena.',
-  skill:{name:'Triple Shot',type:'proj',dmg:7,speed:900,r:12,n:3,cd:6,col:'#ffe27a',kind:'warrow',wskill:1,desc:'Fire 3 arrows at once'}},
- {id:'boomerang',name:'Comet Boomerang',style:'throw',len:30,idle:-.6,dmg:5.5,range:480,dur:.42,hs:.16,he:.3,kb:140,up:0,stun:.24,en:7,cost:600,lvl:21,ranged:1,desc:'Throw it out and it flies back, hitting twice!',
-  skill:{name:'Great Boomerang',type:'proj',dmg:9,speed:620,r:30,cd:7,col:'#ffb347',kind:'boom',ret:1,wskill:1,desc:'A giant boomerang that returns'}},
- {id:'claws',name:'Shadow Claws',style:'thrust',len:28,idle:0,dmg:3.5,range:66,dur:.2,hs:.05,he:.12,kb:70,up:0,stun:.18,en:4,cost:700,lvl:24,desc:'Lightning-fast slashes. Great for combos.',
-  skill:{name:'Fury Flurry',type:'flurry',dmg:4.5,hits:6,cd:7,col:'#b9c8ff',wskill:1,desc:'6 rapid claw strikes'}}];
+ {id:'fists',name:'Mythic Fists',style:'punch',len:0,idle:0,dmg:9,range:82,dur:.3,hs:.07,he:.18,kb:190,up:0,stun:.28,en:7,cost:0,lvl:0,desc:'Fast and reliable. Your creature\'s own power.'},
+ {id:'sword',name:'Star Sword',style:'slash',len:62,idle:-1,dmg:6.5,range:102,dur:.36,hs:.09,he:.2,kb:210,up:0,stun:.28,en:7,cost:0,lvl:0,desc:'Balanced blade with a wide slash.'},
+ {id:'axe',name:'Thunder Axe',style:'chop',len:58,idle:-1.1,dmg:16,range:96,dur:.5,hs:.16,he:.3,kb:280,up:0,stun:.36,en:8,cost:150,lvl:3,desc:'Slow, heavy chops that hit hard.'},
+ {id:'spear',name:'Sky Spear',style:'thrust',len:100,idle:-.5,dmg:5.8,range:142,dur:.4,hs:.12,he:.22,kb:170,up:0,stun:.26,en:7,cost:250,lvl:6,desc:'Longest reach. Poke from afar!'},
+ {id:'staff',name:'Moon Staff',style:'slash',len:74,idle:-1.45,dmg:6.2,range:108,dur:.36,hs:.1,he:.2,kb:180,up:0,stun:.3,en:12,cost:350,lvl:9,desc:'Magic staff with a long, quick swing.'},
+ {id:'hammer',name:'Titan Hammer',style:'chop',len:62,idle:-1,dmg:27,range:94,dur:.68,hs:.26,he:.38,kb:380,up:90,stun:.5,en:9,heavy:1,cost:450,lvl:12,desc:'Super slow but smashes and launches foes.'},
+ {id:'shield',name:'Guardian Shield',style:'thrust',len:24,idle:0,dmg:8.5,range:70,dur:.32,hs:.08,he:.18,kb:240,up:0,stun:.4,en:6,cost:300,lvl:15,desc:'Bash foes. Blocking drains less shield.'},
+ {id:'bow',name:'Wind Bow',style:'shoot',len:40,idle:0,dmg:3.9,range:480,dur:.45,hs:.18,he:.3,kb:120,up:0,stun:.22,en:6,cost:500,lvl:18,ranged:1,desc:'Shoot arrows from across the arena.'},
+ {id:'boomerang',name:'Comet Boomerang',style:'throw',len:30,idle:-.6,dmg:3.6,range:480,dur:.42,hs:.16,he:.3,kb:140,up:0,stun:.24,en:7,cost:600,lvl:21,ranged:1,desc:'Throw it out and it flies back, hitting twice!'},
+ {id:'claws',name:'Shadow Claws',style:'thrust',len:28,idle:0,dmg:5,range:66,dur:.2,hs:.05,he:.12,kb:70,up:0,stun:.18,en:4,cost:700,lvl:24,desc:'Lightning-fast slashes. Great for combos.'}];
 
 const WT0={fists:[3,1.4,0],sword:[3,1.5,.25],axe:[2,1.5,.55],spear:[2,1.5,.3],staff:[3,1.3,.15],hammer:[1,1,.7],shield:[2,1.6,.6],bow:[1,1,.1],boomerang:[1,1,.1],claws:[4,1.6,0]};
 WEAPONS.forEach(w=>{const t=WT0[w.id]||[1,1,.2];w.combo=t[0];w.fin=t[1];w.wt=t[2]});
-const mkW=(id,name,style,len,idle,dmg,range,dur,hs,he,kb,up,stun,en,cost,lvl,combo,fin,wt,desc,skill,pk)=>WEAPONS.push({id,name,style,len,idle,dmg,range,dur,hs,he,kb,up,stun,en,cost,lvl,combo,fin,wt,desc,skill,pk,ranged:!!pk});
-mkW('dagger','Quick Dagger','thrust',36,0,4.4,70,.17,.04,.1,60,0,.16,4,150,2,4,1.7,0,'Super fast stabs, tiny reach, no weight at all.',{name:'Shadow Step',type:'dash',dmg:10,speed:880,cd:5,col:'#c8b8ff',kind:'glow',wskill:1,desc:'Blink through your foe'});
-mkW('katana','Wind Katana','slash',88,-1,5.4,98,.27,.06,.15,130,0,.22,6,330,5,4,1.9,.1,'Fast, long and balanced. A 4-hit chain ends in a big finisher.',{name:'Iai Dash',type:'dash',dmg:15,speed:950,cd:6.5,col:'#dfe8ff',kind:'glow',wskill:1,desc:'Lightning slash dash'});
-mkW('tome','Arcane Tome','shoot',36,0,4.4,480,.26,.1,.2,60,0,.14,5,380,7,1,1,.05,'Rapid magic shots from far away. Weak up close.',{name:'Arcane Barrage',cd:8,type:'proj',dmg:4,n:5,speed:800,r:12,col:'#c08aff',kind:'ink',wskill:1,desc:'5 magic missiles'},{kind:'ink',col:'#c08aff',speed:760,r:11});
-mkW('mace','Skull Mace','chop',62,-1,9.6,90,.44,.15,.28,260,0,.5,8,340,8,2,1.5,.5,'Heavy crushing blows that stun. Slow and heavy.',{name:'Skull Crush',type:'slam',dmg:16,cd:8.5,col:'#d8d0c0',kind:'rock',wskill:1,desc:'Shockwave slam'});
-mkW('trident','Sea Trident','thrust',96,-.4,6.2,132,.4,.12,.22,180,0,.26,7,420,10,3,1.5,.3,'Long reach poke. Great for keeping foes away.',{name:'Tidal Jet',cd:6.5,type:'proj',dmg:9,n:2,speed:760,r:18,col:'#6ad8ff',kind:'ink',wskill:1,desc:'2 water jets'});
-mkW('whip','Thunder Whip','slash',100,-.3,3.8,150,.34,.1,.22,90,0,.2,5,400,11,4,1.3,.05,'Longest close reach, but light hits. 4-hit chain.',{name:'Whirl Lash',type:'spin',dmg:5,rad:150,cd:7.5,col:'#ffe27a',wskill:1,desc:'Big spinning lash'});
-mkW('crossbow','Siege Crossbow','shoot',44,0,11.5,520,.7,.3,.42,240,0,.35,8,560,13,1,1,.35,'Slow reload, huge fast bolts. Ranged only.',{name:'Piercing Bolt',cd:8,type:'proj',dmg:20,n:1,speed:1300,r:12,col:'#fff',kind:'arrow',wskill:1,desc:'One massive bolt'},{kind:'warrow',col:'#ffffff',speed:1250,r:11});
-mkW('twinblades','Twin Blades','slash',54,-.8,3.4,82,.2,.04,.1,55,0,.16,4,520,14,5,2,.05,'Blazing speed with a 5-hit chain and a huge finisher.',{name:'Blade Storm',type:'flurry',dmg:3.2,hits:8,cd:7,col:'#ff9ac8',wskill:1,desc:'8 rapid slashes'});
-mkW('javelin','Sky Javelin','shoot',100,0,9.5,540,.62,.26,.38,260,0,.4,8,480,16,1,1,.3,'Thrown spear. Heavy damage at long range.',{name:'Javelin Rain',cd:8,type:'proj',dmg:6,n:4,speed:900,r:13,col:'#ffd8a0',kind:'arrow',wskill:1,desc:'4 javelins at once'},{kind:'arrow',col:'#ffd8a0',speed:980,r:13});
-mkW('shuriken','Star Shuriken','shoot',30,0,3.4,420,.17,.06,.12,40,0,.12,3,500,17,1,1,0,'Machine-gun throwing stars. Tiny damage, zero weight.',{name:'Shuriken Storm',cd:7,type:'proj',dmg:3.6,n:5,speed:950,r:10,col:'#d8e0ff',kind:'crescent',wskill:1,desc:'5 spinning stars'},{kind:'crescent',col:'#d8e0ff',speed:980,r:9});
-mkW('flail','Spike Flail','chop',90,-1,7,112,.5,.17,.3,240,0,.42,8,600,19,2,1.6,.55,'Long heavy swings with a huge finisher.',{name:'Spiked Spin',type:'spin',dmg:7,rad:120,cd:8.5,col:'#c8ccd8',wskill:1,desc:'Spinning spike ball'});
-mkW('firewand','Ember Wand','shoot',70,0,8,500,.55,.22,.34,200,0,.3,8,640,20,1,1,.1,'Fireballs that hit hard from afar. Light to carry.',{name:'Meteor',cd:10,type:'proj',dmg:22,n:1,speed:520,r:36,col:'#ff8a1f',kind:'fire',wskill:1,desc:'Giant fireball'},{kind:'fire',col:'#ff8a1f',speed:640,r:17});
-mkW('scythe','Reaper Scythe','slash',96,-1.3,7.2,112,.48,.17,.3,220,0,.34,7,700,22,3,1.7,.4,'Wide arcing swings, strong 3rd-hit finisher.',{name:'Reaper Spin',type:'spin',dmg:7,rad:135,cd:8,col:'#b9a0ff',wskill:1,desc:'Wide soul-reaping spin'});
-mkW('greatsword','Titan Greatsword','slash',112,-1.5,9.6,120,.56,.22,.36,330,0,.42,9,800,25,2,1.5,.7,'The biggest blade. Huge damage and reach, very heavy.',{name:'Cleaving Wave',cd:9,type:'proj',dmg:17,n:1,speed:650,r:38,col:'#bfe9ff',kind:'crescent',wskill:1,desc:'Giant energy wave'});
+const mkW=(id,name,style,len,idle,dmg,range,dur,hs,he,kb,up,stun,en,cost,lvl,combo,fin,wt,desc,pk)=>WEAPONS.push({id,name,style,len,idle,dmg,range,dur,hs,he,kb,up,stun,en,cost,lvl,combo,fin,wt,desc,pk,ranged:!!pk});
+mkW('dagger','Quick Dagger','thrust',36,0,5.2,70,.17,.04,.1,60,0,.16,4,150,2,4,1.7,0,'Super fast stabs, tiny reach, no weight at all.');
+mkW('katana','Wind Katana','slash',88,-1,5,98,.27,.06,.15,130,0,.22,6,330,5,4,1.9,.1,'Fast, long and balanced. A 4-hit chain ends in a big finisher.');
+mkW('tome','Arcane Tome','shoot',36,0,3.7,480,.26,.1,.2,60,0,.14,5,380,7,1,1,.05,'Rapid magic shots from far away. Weak up close.',{kind:'ink',col:'#c08aff',speed:760,r:11});
+mkW('mace','Skull Mace','chop',62,-1,12.5,90,.44,.15,.28,260,0,.5,8,340,8,2,1.5,.5,'Heavy crushing blows that stun. Slow and heavy.');
+mkW('trident','Sea Trident','thrust',96,-.4,7,132,.4,.12,.22,180,0,.26,7,420,10,3,1.5,.3,'Long reach poke. Great for keeping foes away.');
+mkW('whip','Thunder Whip','slash',100,-.3,5.6,150,.34,.1,.22,90,0,.2,5,400,11,4,1.3,.05,'Longest close reach, but light hits. 4-hit chain.');
+mkW('crossbow','Siege Crossbow','shoot',44,0,5,520,.7,.3,.42,240,0,.35,8,560,13,1,1,.35,'Slow reload, huge fast bolts. Ranged only.',{kind:'warrow',col:'#ffffff',speed:1250,r:11});
+mkW('twinblades','Twin Blades','slash',54,-.8,5.6,82,.2,.04,.1,55,0,.16,4,520,14,5,2,.05,'Blazing speed with a 5-hit chain and a huge finisher.');
+mkW('javelin','Sky Javelin','shoot',100,0,4.6,540,.62,.26,.38,260,0,.4,8,480,16,1,1,.3,'Thrown spear. Heavy damage at long range.',{kind:'arrow',col:'#ffd8a0',speed:980,r:13});
+mkW('shuriken','Star Shuriken','shoot',30,0,3.1,420,.17,.06,.12,40,0,.12,3,500,17,1,1,0,'Machine-gun throwing stars. Tiny damage, zero weight.',{kind:'crescent',col:'#d8e0ff',speed:980,r:9});
+mkW('flail','Spike Flail','chop',90,-1,11.8,112,.5,.17,.3,240,0,.42,8,600,19,2,1.6,.55,'Long heavy swings with a huge finisher.');
+mkW('firewand','Ember Wand','shoot',70,0,4.4,500,.55,.22,.34,200,0,.3,8,640,20,1,1,.1,'Fireballs that hit hard from afar. Light to carry.',{kind:'fire',col:'#ff8a1f',speed:640,r:17});
+mkW('scythe','Reaper Scythe','slash',96,-1.3,12,112,.48,.17,.3,220,0,.34,7,700,22,3,1.7,.4,'Wide arcing swings, strong 3rd-hit finisher.');
+mkW('greatsword','Titan Greatsword','slash',112,-1.5,14.5,120,.56,.22,.36,330,0,.42,9,800,25,2,1.5,.7,'The biggest blade. Huge damage and reach, very heavy.');
 const WI={};WEAPONS.forEach(w=>WI[w.id]=w);
 function weaponOwned(id){const w=WI[id];return !!QS.get('unlock')||save.weapons.includes(id)||(w.lvl>0&&save.cleared>=w.lvl)}
 function equipped(heroIdx){const o=QS.get('w');if(o&&WI[o])return WI[o];const id=save.loadout[SPECIES[heroIdx].id]||'sword';return WI[weaponOwned(id)?id:'fists']}
@@ -147,21 +137,22 @@ const NLV=LEVELS.length;
 
 /* ---------- input ---------- */
 const inp={held:{},press:{}};
-const KEYMAP={KeyA:'left',ArrowLeft:'left',KeyD:'right',ArrowRight:'right',KeyW:'jump',ArrowUp:'jump',Space:'jump',KeyS:'shield',ArrowDown:'shield',ShiftLeft:'shield',ShiftRight:'shield',KeyL:'skill',KeyO:'ult',KeyH:'ranged',KeyB:'ranged',KeyJ:'punch',KeyZ:'punch',KeyK:'kick',KeyX:'kick',KeyI:'special',KeyC:'special',KeyU:'dodge',KeyV:'dodge'};
+const KEYMAP={KeyA:'left',ArrowLeft:'left',KeyD:'right',ArrowRight:'right',KeyW:'jump',ArrowUp:'jump',Space:'jump',KeyS:'shield',ArrowDown:'shield',ShiftLeft:'shield',ShiftRight:'shield',KeyO:'ult',KeyH:'ranged',KeyB:'ranged',KeyJ:'punch',KeyZ:'punch',KeyU:'dodge',KeyV:'dodge'};
 function press(n){if(!inp.held[n])inp.press[n]=true;inp.held[n]=true}
 function release(n){inp.held[n]=false}
 let touchMode=!!QS.get('touch')||navigator.maxTouchPoints>0||('ontouchstart' in window);
-const TB=[{n:'left',x:70,y:486,r:42},{n:'right',x:176,y:486,r:42},{n:'jump',x:123,y:408,r:38,l:['JUMP','W']},
- {n:'punch',x:888,y:478,r:50,l:['CLOSE','ATTACK','J'],c:'#ff7a3a'},{n:'kick',x:776,y:498,r:40,l:['KICK','K'],c:'#ffc23a'},{n:'ranged',x:790,y:404,r:38,l:['RANGED','ATTACK','H'],c:'#4ad0ff'},
- {n:'special',x:894,y:372,r:34,l:['NITRO','I'],c:'#b66bff'},
- {n:'skill',x:802,y:312,r:32,l:['WEAPON','SKILL','L'],c:'#5aff9a'},{n:'ult',x:900,y:286,r:32,l:['ULTI-','MATE','O'],c:'#ff7ac8'},
- {n:'dodge',x:690,y:424,r:30,l:['DODGE','U'],c:'#5ad0ff'},{n:'shield',x:672,y:506,r:30,l:['BLOCK','S'],c:'#5aff9a'}];
+const TB=[{n:'left',x:74,y:482,r:46},{n:'right',x:186,y:482,r:46},
+ {n:'punch',x:882,y:468,r:54,l:['ATTACK'],c:'#ff7a3a'},{n:'jump',x:762,y:484,r:46,l:['JUMP'],c:'#9a8aff'},
+ {n:'ranged',x:798,y:376,r:42,l:['RANGED'],c:'#4ad0ff'},{n:'ult',x:906,y:352,r:40,l:['ULTI-','MATE'],c:'#ff7ac8'},
+ {n:'shield',x:666,y:424,r:30,l:['BLOCK'],c:'#5aff9a'},{n:'dodge',x:660,y:496,r:30,l:['DODGE'],c:'#5ad0ff'}];
+let lastTouch=-1e9;const nowMs=()=>performance.now();
+function relAllTouch(){for(const[,n] of ptrs)release(n);ptrs.clear()}
 const ptrs=new Map();
 function lpos(e){return[(e.clientX-offx)/scale,(e.clientY-offy)/scale]}
 function tbAt(x,y){let best=null,bd=1e9;for(const b of TB){const d=Math.hypot(x-b.x,y-b.y);if(d<b.r+12&&d<bd){bd=d;best=b}}return best}
 cv.addEventListener('pointerdown',e=>{
-  e.preventDefault();SND.resume();SND.startPending();GP.active=false;
-  if(e.pointerType==='touch')touchMode=true;
+  e.preventDefault();SND.resume();SND.startPending();GP.active=false;lastTouch=nowMs();
+  if(e.pointerType==='touch'||e.pointerType==='pen')touchMode=true;
   try{cv.setPointerCapture(e.pointerId)}catch(_){}
   const[x,y]=lpos(e);
   if(scene===S.fight&&!G.paused&&G.state!=='end'&&G.state!=='perk'){
@@ -172,12 +163,17 @@ cv.addEventListener('pointerdown',e=>{
   uiClick(curUI(),x,y);
 });
 cv.addEventListener('pointermove',e=>{
+  if(e.pointerType!=='mouse')lastTouch=nowMs();
   const[x,y]=lpos(e);
   if(ptrs.has(e.pointerId)){const old=ptrs.get(e.pointerId);if(old==='left'||old==='right'){const b=tbAt(x,y);if(b&&(b.n==='left'||b.n==='right')&&b.n!==old){release(old);press(b.n);ptrs.set(e.pointerId,b.n)}}return}
   if(e.pointerType!=='touch')uiHover(curUI(),x,y);
 });
 function up(e){if(ptrs.has(e.pointerId)){release(ptrs.get(e.pointerId));ptrs.delete(e.pointerId)}}
-cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);cv.addEventListener('lostpointercapture',up);addEventListener('pointerup',up);addEventListener('pointercancel',up);
+['gesturestart','gesturechange','gestureend'].forEach(ev=>addEventListener(ev,e=>e.preventDefault()));
+addEventListener('touchstart',e=>{lastTouch=nowMs();GP.active=false},{passive:true});addEventListener('touchend',e=>{lastTouch=nowMs();if(!e.touches.length)relAllTouch()},{passive:true});addEventListener('touchcancel',()=>{lastTouch=nowMs();relAllTouch()},{passive:true});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)relAllTouch()});
+addEventListener('orientationchange',()=>{setTimeout(resize,150);setTimeout(resize,500)});if(window.visualViewport)visualViewport.addEventListener('resize',resize);
 addEventListener('blur',()=>{for(const k in inp.held)inp.held[k]=false;ptrs.clear();if(G&&G.fs)for(const f of G.fs)if(f.inp)f.inp.held={}});
 document.addEventListener('contextmenu',e=>e.preventDefault());
 addEventListener('keydown',e=>{
@@ -226,13 +222,13 @@ function uiKey(u,code){if(!u)return;const n=u.btns.length,cols=u.cols||1;
 function vmenu(labels,y0,gap){return labels.map((l,i)=>({x:330,y:y0+i*(gap||62),w:300,h:52,label:l[0],fn:l[1]}))}
 
 /* ---------- Fighters ---------- */
-const EDGES=['jump','punch','kick','special','dodge','skill','ult','ranged'];
-const ATK={punch:{dur:.3,hs:.07,he:.18,dmg:5,range:82,kb:190,up:0,stun:.28,en:7},kick:{dur:.46,hs:.14,he:.27,dmg:8.5,range:98,kb:330,up:140,stun:.4,en:9}};
+const EDGES=['jump','punch','dodge','ult','ranged'];
+const ATK={punch:{dur:.3,hs:.07,he:.18,dmg:5,range:82,kb:190,up:0,stun:.28,en:7}};
 const SPDUR={proj:.65,dash:.7,slam:.85,flurry:.95,spin:.8,heal:.85,buff:.75,nova:.85,leap:1.7};
 function mkF(idx,x,face,o){return armorInit(mkF0(idx,x,face,o))}
 function mkF0(idx,x,face,o){o=o||{};const sp=SPECIES[idx],st=o.st||{},maxhp=100*sp.hp*(o.hpm||1)*(st.hp||1);
   return{idx,sp,team:o.team||0,inv:0,dropT:0,plat:null,chain:0,chainT:0,revive:!!o.revive,sy:groundY(x),name:o.name||'',x,y:groundY(x),vx:0,vy:0,face,hp:maxhp,maxhp,chip:maxhp,en:o.en==null?25:o.en,combo:0,comboT:0,maxCombo:0,atk:null,stun:0,dodgeT:0,dodgeCd:0,shield:false,sh:100,ko:false,rot:0,rotV:0,t:Math.random()*5,
-    sc:sp.sc*(o.scale||1),in:{},buf:{},ai:o.ai||null,pose:newPose(),flash:0,onGround:true,boss:!!o.boss,player:!!o.player,lock:0,dmgM:(o.dmgM||1)*(st.atk||1),hitsTaken:0,rdy:false,defM:(o.defM||1),spdM:(o.spdM||1)*(st.spd||1),enM:st.en||1,cdM:(o.cdM||1)*(st.cd||1),wpM:st.wp||1,wp:o.wp||WI.fists,cd:{skill:0,ult:0,ranged:0},cdMax:{skill:1,ult:1,ranged:1},armor:(o.armor||0)+(st.armor||0),ap:0,apMax:0,apT:0,aspd:(o.aspd||1)*(st.aspd||1),regen:st.regen||0,steal:st.steal||0,gear:o.gear||null,phase:1,buffs:{atk:0,spd:0,def:0},boomOut:false,aura:o.aura||null,tag:o.tag||'',_a:(o.armor||0)+(st.armor||0)}}
+    sc:sp.sc*(o.scale||1),in:{},buf:{},ai:o.ai||null,pose:newPose(),flash:0,onGround:true,boss:!!o.boss,player:!!o.player,lock:0,dmgM:(o.dmgM||1)*(st.atk||1),hitsTaken:0,rdy:false,defM:(o.defM||1),spdM:(o.spdM||1)*(st.spd||1),enM:st.en||1,cdM:(o.cdM||1)*(st.cd||1),wpM:st.wp||1,wp:o.wp||WI.fists,cd:{ult:0,ranged:0},cdMax:{ult:1,ranged:1},armor:(o.armor||0)+(st.armor||0),ap:0,apMax:0,apT:0,aspd:(o.aspd||1)*(st.aspd||1),regen:st.regen||0,steal:st.steal||0,gear:o.gear||null,phase:1,buffs:{atk:0,spd:0,def:0},boomOut:false,aura:o.aura||null,tag:o.tag||'',_a:(o.armor||0)+(st.armor||0)}}
 function armorInit(f){f.apMax=f.armor>0?18+f.armor*1.2:0;f.ap=f.apMax;return f}
 let G=null;
 function inRange(f,foe,R){const dx=(foe.x-f.x)*f.face;return dx>-12&&dx<R*f.sc+24*foe.sc&&Math.abs(foe.y-f.y)<100*Math.max(f.sc,foe.sc)}
@@ -245,23 +241,22 @@ function startAtk(f,type){
       f.atk={type:'punch',t:0,hit:false,fired:false,kind:'punch',style:w.style,dmg:d.dmg,range:d.range,dur:d.dur,hs:d.hs,he:d.he,kb:d.kb,up:0,stun:d.stun,en:d.en,heavy:false,w:d,rng:1}}
     else{base=1;f.atk={type:'punch',t:0,hit:false,fired:false,kind:'punch',style:'shoot',bolt:RB[f.sp.id],dmg:5.5,range:80,dur:.42,hs:.16,he:.3,kb:140,up:0,stun:.22,en:6,heavy:false,w:WI.fists,rng:1}}
     f.cd.ranged=f.cdMax.ranged=base*f.cdM;SND.play('swing');f.vx=-f.face*30;return true}
-  if(f.player&&(type==='ult'||type==='skill')&&f.cd[type]<=0)track(type==='ult'?'ult':'skill',1);
+  if(f.player&&type==='ult'&&f.cd.ult<=0)track('ult',1);
 
-  if(type==='special'||type==='skill'||type==='ult'){
+  if(type==='ult'){
     let d;
-    if(type==='special'){if(f.en<50)return false;d=f.sp.sp;f.en-=50}
-    else{if(f.cd[type]>0)return false;d=type==='skill'?f.wp.skill:CULT[f.sp.id];f.cd[type]=f.cdMax[type]=d.cd*f.cdM}
+    if(f.cd.ult>0)return false;d=CULT[f.sp.id];f.cd.ult=f.cdMax.ult=d.cd*f.cdM/(f.enM||1)
     f.atk={type:'special',slot:type,def:d,kind:d.type,dur:SPDUR[d.type],t:0,hit:false,fired:false,n:0,range:d.type==='dash'?70:100,hs:0,he:0};SND.play(d.type==='heal'?'heal':'special');
     if(d.guard)f.buffs.def=Math.max(f.buffs.def,d.guard);
     for(let i=0;i<20;i++)spawnP(f.x+rnd(-40,40),f.y-rnd(0,140),0,-rnd(50,200),.7,6,d.col,'glow')}
   else{
-    let d=type==='kick'?ATK.kick:f.wp;if(type==='punch'&&f.wp.ranged)d=WI.fists;
+    let d=f.wp;if(type==='punch'&&f.wp.ranged)d=WI.fists;
     let dm=1,dur=d.dur,fin=false,kbm=1;
     if(type==='punch'&&d.combo>1){f.chain=f.chainT>0?f.chain+1:1;if(f.chain>d.combo)f.chain=1;fin=f.chain===d.combo;if(fin){dm=d.fin;dur=d.dur*1.18;kbm=1.6}else dur=d.dur*.9}
     else if(type==='punch')f.chain=1;
     if(type==='punch')f.chainT=dur+.55;
     const ds=dur/d.dur;
-    f.atk={type,t:0,hit:false,fired:false,kind:type,style:type==='punch'?d.style:undefined,dmg:d.dmg*dm,range:d.range*(fin?1.08:1),dur,hs:d.hs*ds,he:d.he*ds,kb:d.kb*kbm,up:fin?Math.max(d.up||0,45):(d.up||0),stun:d.stun*(fin?1.25:1),en:d.en,heavy:!!d.heavy||type==='kick'||fin,fin,w:d};
+    f.atk={type,t:0,hit:false,fired:false,kind:type,style:type==='punch'?d.style:undefined,dmg:d.dmg*dm,range:d.range*(fin?1.08:1),dur,hs:d.hs*ds,he:d.he*ds,kb:d.kb*kbm,up:fin?Math.max(d.up||0,45):(d.up||0),stun:d.stun*(fin?1.25:1),en:d.en,heavy:!!d.heavy||fin,fin,w:d};
     SND.play('swing');f.vx=f.face*(type==='punch'?(d.style==='thrust'?150:110):70)}
   return true}
 function hitFrom(att,foe,o){const sv=att.face;att.face=foe.x>=att.x?1:-1;const r=takeHit(att,foe,o);att.face=sv;return r}
@@ -276,13 +271,12 @@ function takeHit(att,def,o){
     if(def.player)track('block',1);
     def.sh-=dmg*2.2*(def.wp.id==='shield'?.55:1);def.vx=att.face*Math.min(o.kb,220)*.5;att.vx-=att.face*(o.proj?0:120);
     SND.play('block');burst(hx+def.face*30,hy,10,'#bfe9ff',200,5,'star');ring(hx+def.face*30,hy,'#9ad8ff',40);G.shake=Math.max(G.shake,3);G.hitstop=.04;
-    def.hp-=dmg*.08;def.chip=Math.max(def.chip,def.hp);def.en=Math.min(100,def.en+3);
+    def.hp-=dmg*.08;def.chip=Math.max(def.chip,def.hp);
     if(def.sh<=0){def.sh=45;def.stun=1;def.shield=false;pop(def.x,def.y-150*def.sc,'GUARD BREAK!','#ffd24a',22);SND.play('heavy');G.shake=8}
     if(def.hp<=0)koF(att,def,o);
     return false}
   def.hp-=dmg;def.hitsTaken++;if(att.player){G.dmgDealt=(G.dmgDealt||0)+dmg;track('damage',dmg);if(o.rk)track('rhit',1)}if(att.steal>0&&!att.ko)att.hp=Math.min(att.maxhp,att.hp+dmg*att.steal);def.flash=.18;def.atk=null;def.shield=false;
   att.combo++;att.comboT=1.5;att.maxCombo=Math.max(att.maxCombo,att.combo);if(att.player)track('combo',att.combo);
-  att.en=Math.min(100,att.en+(o.en||6));def.en=Math.min(100,def.en+5);
   def.vx=att.face*o.kb;def.stun=Math.max(def.stun,o.stun||.3);
   if(o.up){def.vy=-o.up*3.2;def.onGround=false;def.y-=2}
   const heavy=!!o.heavy||dmg>=14;
@@ -364,7 +358,6 @@ function updF(f,foe,dt){
   for(const k of EDGES){if(f.buf[k]>0)f.buf[k]-=dt;if(f.in[k]){f.buf[k]=.2;f.in[k]=false}}
   if(f.regen>0&&G.state==='fight'&&!f.ko)f.hp=Math.min(f.maxhp,f.hp+f.maxhp*f.regen*dt);
   if(f.armFlash>0)f.armFlash-=dt;f.apT-=dt;if(f.apMax>0&&f.apT<=0&&f.ap<f.apMax&&!f.ko)f.ap=Math.min(f.apMax,f.ap+dt*(2+f.armor*.04));
-  const was=f.en;f.en=Math.min(100,f.en+dt*1.6*f.enM);if(f.player&&was<50&&f.en>=50)SND.play('ready');
   f.chip=Math.max(f.hp,f.chip-dt*28);
   if(f.ko){
     f.py=f.y;f.vy+=2300*dt;f.x+=f.vx*dt;f.y+=f.vy*dt;
@@ -384,10 +377,7 @@ function updF(f,foe,dt){
       if(f.buf.jump>0&&f.onGround&&!f.shield){f.buf.jump=0;f.vy=-800*(.88+.12*sp.jmp)*(f.sc>1.2?.95:1);f.onGround=false;SND.play('jump');burst(f.x,f.y,6,'#ddd',120,5,'dust')}
       if(f.buf.dodge>0&&f.dodgeCd<=0&&f.onGround){f.buf.dodge=0;f.dodgeT=.3;f.dodgeCd=.85;f.vx=(dir||-f.face)*560;SND.play('dodge');burst(f.x,f.y-60,8,sp.glow,160,6,'glow')}
       else if(f.buf.punch>0){f.buf.punch=0;startAtk(f,'punch')}
-      else if(f.buf.kick>0){f.buf.kick=0;startAtk(f,'kick')}
       else if(f.buf.ranged>0){f.buf.ranged=0;startAtk(f,'ranged')}
-      else if(f.buf.special>0){f.buf.special=0;startAtk(f,'special')}
-      else if(f.buf.skill>0){f.buf.skill=0;startAtk(f,'skill')}
       else if(f.buf.ult>0){f.buf.ult=0;startAtk(f,'ult')}
     }
   }else f.vx*=.8;
@@ -442,18 +432,16 @@ function aiThink(f,foe,dt){if(f.ai.tpT>0)f.ai.tpT-=dt;
     if(r<(a.dodgy?.3:.55))a.shT=rnd(.35,.7);else if(r<.8&&f.dodgeCd<=0)i.dodge=true;else i.jump=true;return}
   if(diff>.3){const pr=G.projs.find(q=>q.owner.team!==f.team&&Math.abs(q.x-f.x)<200&&Math.sign(q.vx)===Math.sign(f.x-q.x));
     if(pr&&Math.random()<.08+diff*.4){const r=Math.random();if(r<.4)a.shT=rnd(.3,.5);else if(r<.7&&f.dodgeCd<=0)i.dodge=true;else i.jump=true;return}}
-  if(diff>.45&&foe.atk&&foe.atk.type!=='special'&&foe.atk.t>(foe.atk.he||0)+.02&&d<(f.wp.ranged?80:f.wp.range)*.9*f.sc&&Math.random()<.15+diff*.5){if(f.wp.ranged)i.kick=true;else i.punch=true;return}
+  if(diff>.45&&foe.atk&&foe.atk.type!=='special'&&foe.atk.t>(foe.atk.he||0)+.02&&d<(f.wp.ranged?80:f.wp.range)*.9*f.sc&&Math.random()<.15+diff*.5){i.punch=true;return}
   const aiOk=X=>{switch(X.type){case'proj':return d>180;case'dash':return d>140&&d<430;case'slam':return d<150;case'flurry':return d<110;case'spin':return d<120;case'nova':return d<X.rad*.8;case'heal':return f.hp<f.maxhp*.55;case'buff':return d<420;case'leap':return d>170&&d<420;default:return false}};
-  if(f.en>=50&&Math.random()<.2+diff*.4&&aiOk(S)){i.special=true;return}
-  if(f.cd.skill<=0&&Math.random()<.15+diff*.45&&aiOk(f.wp.skill)){i.skill=true;return}
   const U=CULT[f.sp.id];if(f.cd.ult<=0&&Math.random()<.12+diff*.4&&aiOk(U)){i.ult=true;return}
-  if(f.wp.ranged&&f.wp.style==='shoot'){if(d>430)i[tw]=true;else if(d<140){if(Math.random()<.5)i[aw]=true;else if(d<100)i.kick=true}else if(Math.random()<.45+.3*diff)i.ranged=true;return}
+  if(f.wp.ranged&&f.wp.style==='shoot'){if(d>430)i[tw]=true;else if(d<140){if(Math.random()<.5)i[aw]=true;else if(d<100)i.punch=true}else if(Math.random()<.45+.3*diff)i.ranged=true;return}
   if(f.wp.style==='throw'&&!f.boomOut&&d>150&&d<420&&Math.random()<.5){i.ranged=true;return}
   if(!f.wp.ranged&&f.cd.ranged<=0&&d>230&&d<560&&Math.random()<.25+.35*diff){i.ranged=true;return}
   if(f.boss&&Math.random()<.04)i.jump=true;
   if(d>Math.max(70,(f.wp.ranged?82:f.wp.range)*.85*f.sc)+6+rnd(-8,14)){i[tw]=true;if(Math.random()<.05)i.jump=true;if(Math.random()<.05&&f.dodgeCd<=0&&d>200)i.dodge=true}
   else{const r=Math.random(),ag=Math.min(.9,.45+.4*diff);
-    if(r<ag*.6)i.punch=true;else if(r<ag)i.kick=true;else if(r<ag+.12)i[aw]=true;else if(r<ag+.2)a.shT=rnd(.3,.6)}
+    if(r<ag)i.punch=true;else if(r<ag+.12)i[aw]=true;else if(r<ag+.2)a.shT=rnd(.3,.6)}
 }
 
 /* ---------- Fight ---------- */
@@ -470,7 +458,7 @@ const ENW=WEAPONS.map(w=>w.id);
 const wRank=w=>w.ranged?'RANGED':'CLOSE';
 /* difficulty: tuned with AI-vs-AI sims (see tools/sim) */
 const DIFFM=[{n:'EASY',hp:.85,dmg:.8,ai:-.12},{n:'NORMAL',hp:1,dmg:1,ai:0},{n:'HARD',hp:1.2,dmg:1.2,ai:.12}];
-const STAGE={hp0:.8,hpK:.033,dm0:.55,dmK:.0175,ar:1.1,ai0:.15,aiK:.035,sp0:.94,spK:.004,cd0:1.7,cdK:.025,bh0:.95,bhK:.05,bd:.9,ba:0};
+const STAGE={hp0:.8,hpK:.03,dm0:.55,dmK:.0145,ar:1.1,ai0:.15,aiK:.035,sp0:.94,spK:.004,cd0:1.7,cdK:.025,bh0:.95,bhK:.05,bd:.72,ba:0};
 function stageStats(i){i=Math.min(i,26);return{hp:STAGE.hp0+STAGE.hpK*i,dmg:STAGE.dm0+STAGE.dmK*i,armor:STAGE.ar*i,ai:Math.min(1.3,STAGE.ai0+STAGE.aiK*i),spd:STAGE.sp0+STAGE.spK*i,cd:Math.max(.9,STAGE.cd0-STAGE.cdK*i)}}
 const BOSSN=['Ancient','Elder','Mythic','Titan','Dread','Alpha'];
 function gearFor(armor){const t=Math.min(5,Math.round(armor/12));return t>0?{helm:t,chest:t,limbs:Math.max(0,t-1)}:null}
@@ -485,27 +473,27 @@ function enemyFor(cfg){
     return{idx,scale:(boss?1.3:1)*(v.scale||1),hpm:(.8+.08*k)*Math.pow(1.02,k)*(boss?1.7:1)*(v.hpm||1)*DM.hp,diff:Math.min(1.5,.15+.045*w)+DM.ai,boss,dmgM:(.55+.03*k)*Math.pow(1.008,k)*(boss?1:1)*(v.dmgM||1)*DM.dmg*.95,defM:v.defM,spdM:Math.min(1.3,.95+.006*w)*(v.spdM||1),cdM:Math.max(.7,1.6-.04*w)*(v.cdM||1),wp:WI[ENW[(Math.random()*ENW.length)|0]],tag:v.tag,aura:v.aura,v,armor,gear:gearFor(armor)}}
   return{idx:cfg.enemy,hpm:1,diff:cfg.diff,dmgM:(.75+.35*cfg.diff)*.92,cdM:1.6,wp:WI[ENW[(Math.random()*ENW.length)|0]],armor:cfg.diff*20,gear:gearFor(cfg.diff*20)}
 }
-function spawnEnemy(side){const o=enemyFor(G.cfg);const e=mkF(o.idx,side>0?ARENA.ww/2+310:ARENA.ww/2-310,side>0?-1:1,{team:1,scale:o.scale,hpm:o.hpm,boss:o.boss,dmgM:o.dmgM,defM:o.defM,spdM:o.spdM,cdM:o.cdM,wp:o.wp,tag:o.tag,aura:o.aura,armor:o.armor,gear:o.gear,ai:mkAI(o.diff,o.boss,o.v),en:20});e.lock=1.4;e.cd.skill=rnd(2,5)*e.cdM;e.cd.ult=rnd(4,8)*e.cdM;e.cd.ranged=rnd(.5,1.5);
+function spawnEnemy(side){const o=enemyFor(G.cfg);const e=mkF(o.idx,side>0?ARENA.ww/2+310:ARENA.ww/2-310,side>0?-1:1,{team:1,scale:o.scale,hpm:o.hpm,boss:o.boss,dmgM:o.dmgM,defM:o.defM,spdM:o.spdM,cdM:o.cdM,wp:o.wp,tag:o.tag,aura:o.aura,armor:o.armor,gear:o.gear,ai:mkAI(o.diff,o.boss,o.v),en:20});e.lock=1.4;e.cd.ult=rnd(4,8)*e.cdM;e.cd.ranged=rnd(.5,1.5);
   e.ename=o.boss&&G.cfg.mode==='story'?LEVELS[G.cfg.level].name.replace(/^.*?: /,''):o.boss&&G.cfg.mode==='survival'?BOSSN[(Math.random()*BOSSN.length)|0]+' '+SPECIES[o.idx].name:SPECIES[o.idx].name;return e}
 function bossPhase(e){const ph=e.phase;pop(e.x,e.y-190*e.sc,'PHASE '+ph+'!','#ff5a4a',32);toast(ph===3?'BOSS ENRAGED! Hits harder and faster!':'BOSS PHASE 2: It gets angrier!','#ff8a7a');
-  e.dmgM*=1.12;e.spdM*=1.07;e.cdM*=.8;e.cd.ult=0;e.cd.skill=Math.min(e.cd.skill,1);e.armor+=6;e.apMax=18+e.armor*1.2;e.ap=e.apMax*.7;e.aura=ph===3?'#ff2a2a':'#ff9a3a';
+  e.dmgM*=1.12;e.spdM*=1.07;e.cdM*=.8;e.cd.ult=0;e.armor+=6;e.apMax=18+e.armor*1.2;e.ap=e.apMax*.7;e.aura=ph===3?'#ff2a2a':'#ff9a3a';
   G.shake=18;G.flashW=.25;SND.play('shock');ring(e.x,e.y-70,'#ff5a4a',220);ring(e.x,e.y-70,'#fff',140);burst(e.x,e.y-80,40,'#ff7a3a',560,9,'star')}
 function toast(text,col){if(G){G.toasts=G.toasts||[];G.toasts.push({text,col:col||'#ffe27a',t:0})}}
 const PERKS=[
  {id:'dmg',n:'+15% DAMAGE',d:'All your attacks hit harder',tag:'ATK',col:'#ff9a3a',fn:p=>{p.dmgM*=1.15}},
  {id:'heal',n:'HEAL 50%',d:'Restore half of your life now',tag:'LIFE',col:'#7aff9a',fn:p=>{healF(p,p.maxhp*.5)}},
  {id:'armor',n:'+10 ARMOR',d:'Tougher armor, less damage taken',tag:'ARM',col:'#7ac8ff',fn:p=>{p.armor+=10;p.apMax=18+p.armor*1.2;p.ap=p.apMax}},
- {id:'cd',n:'-15% COOLDOWNS',d:'Skill, ultimate and ranged recharge faster',tag:'CD',col:'#c08aff',fn:p=>{p.cdM*=.85}},
+ {id:'cd',n:'-15% COOLDOWNS',d:'Ultimate and ranged recharge faster',tag:'CD',col:'#c08aff',fn:p=>{p.cdM*=.85}},
  {id:'spd',n:'+8% SPEED',d:'Move faster and attack 6% faster',tag:'SPD',col:'#c8ff5a',fn:p=>{p.spdM*=1.08;p.aspd*=1.06}},
  {id:'steal',n:'+4% LIFESTEAL',d:'Heal from damage you deal',tag:'STL',col:'#ff6a9a',fn:p=>{p.steal+=.04}},
  {id:'maxhp',n:'+20% MAX LIFE',d:'More max life, and heal that much',tag:'HP',col:'#ff6a7a',fn:p=>{const d=p.maxhp*.2;p.maxhp+=d;p.hp+=d;p.chip=p.hp}},
  {id:'regen',n:'+0.4% REGEN',d:'Heal slowly while fighting',tag:'REG',col:'#5aff9a',fn:p=>{p.regen+=.004}},
- {id:'nitro',n:'NITRO + ULT READY',d:'Fill nitro and refresh your ultimate',tag:'NIT',col:'#b66bff',fn:p=>{p.en=100;p.cd.ult=0}}];
+ {id:'ultr',n:'ULT READY + CHARGE',d:'Refresh your ultimate and recharge it 25% faster',tag:'ULT',col:'#b66bff',fn:p=>{p.cd.ult=0;p.enM*=1.25}}];
 function pickPerks(n){const a=PERKS.slice(),o=[];while(o.length<n&&a.length)o.push(a.splice((Math.random()*a.length)|0,1)[0]);return o}
 function initRound(){
   const cfg=G.cfg;
   G.cam=null;G.p=mkF(cfg.hero,ARENA.ww/2-310,1,{player:true,en:25,st:statsOf(SPECIES[cfg.hero].id),wp:equipped(cfg.hero),gear:save.armor});G.p.lock=1.4;
-  if(G.bo.pwr)G.p.dmgM*=1.15;if(G.bo.arm){G.p.armor+=10;G.p._a+=10;armorInit(G.p)}if(G.bo.nit)G.p.en=100;G.p.revive=!!G.bo.rev;
+  if(G.bo.pwr)G.p.dmgM*=1.15;if(G.bo.arm){G.p.armor+=10;G.p._a+=10;armorInit(G.p)}if(G.bo.nit)G.p.cdM*=.7;G.p.revive=!!G.bo.rev;
   G.e=spawnEnemy(1);G.projs=[];G.state='intro';G.stateT=0;G.slow=0;
   if(cfg.mode==='survival'&&G.carry){G.p.hp=G.carry.hp;G.p.en=G.carry.en}
   G.banner=cfg.mode==='duel'?'ROUND '+G.round:cfg.mode==='story'?'LEVEL '+(cfg.level+1):(G.e.boss?'BOSS ':'')+'WAVE '+G.wave;
@@ -640,7 +628,7 @@ function drawHUD(c,t){
   const p=G.p,e=G.e;
   const side=(f,x,flip,name)=>{
     const w=340,r=f.hp/f.maxhp,ax=flip?x+w:x,bx=flip?x+w-w*.62:x,bc=bx+w*.31;
-    rr(c,x-6,6,w+12,f.player?176:96,14);c.fillStyle='rgba(10,5,30,.58)';c.fill();
+    rr(c,x-6,6,w+12,f.player?166:96,14);c.fillStyle='rgba(10,5,30,.58)';c.fill();
     txt(c,name,ax,17,17,'#fff',flip?'right':'left','#000',4);
     drawBar(c,x,28,w,19,r,hpCol(c,r),flip,f.chip/f.maxhp);
     // boss phase ticks
@@ -650,20 +638,15 @@ function drawHUD(c,t){
     if(f.armor>0){const ar=f.apMax?f.ap/f.apMax:0;drawBar(c,bx,51,w*.62,12,ar,f.armFlash>0?'#fff':'#6ab8ff',flip);
       txt(c,'ARMOR '+Math.round(f.armor)+'  (-'+Math.round(armRed(f.armor)*100)+'% dmg)'+(f.ap<=0?' BROKEN':''),bc,57.5,10,'#fff','center','#000',3)}
     else txt(c,'ARMOR 0',ax,57,10,'#9ab',flip?'right':'left');
-    // nitro
-    const rdy=f.en>=50;
-    drawBar(c,bx,66,w*.62,11,f.en/100,rdy?grad(c,x,0,x+w,0,['#b66bff','#5ad0ff','#b66bff']):'#7a5aff',flip);
-    txt(c,rdy?'NITRO READY - press '+kh('I'):'NITRO '+Math.round(f.en)+'%',bc,71.5,10,'#fff','center','#000',3);
     // block meter
-    const kx=flip?x:x+w*.65;drawBar(c,kx,66,w*.35,11,f.sh/100,f.sh<30?'#ff9a5a':'#5aff9a',flip);txt(c,'BLOCK',kx+w*.175,71.5,10,'#fff','center','#000',3);
+    drawBar(c,bx,66,w*.62,11,f.sh/100,f.sh<30?'#ff9a5a':'#5aff9a',flip);txt(c,'BLOCK',bc,71.5,10,'#fff','center','#000',3);
     if(f.player){
-      const labels=[['J','CLOSE','#ff7a3a',null,null,'melee'],['H','RANGED','#4ad0ff','ranged',null,'shoot'],['K','KICK','#ffc23a',null,null,'strong'],['L','SKILL','#5aff9a','skill',null,'weapon'],['O','ULT','#ff7ac8','ult',null,'power'],['I','NITRO','#b66bff',null,Math.min(1,f.en/50),f.en>=50?'READY':'']];
-      labels.forEach((l,k)=>chip(c,x+k*57,82,54,37,kh(l[0]),l[1],l[2],f,l[3],t,l[5],l[4]));
+      const labels=[['J','CLOSE','#ff7a3a',null,null,'melee'],['H','RANGED','#4ad0ff','ranged',null,'shoot'],['O','ULT','#ff7ac8','ult',null,'power']];
+      labels.forEach((l,k)=>chip(c,x+k*86,82,82,37,kh(l[0]),l[1],l[2],f,l[3],t,l[5],l[4]));
       const cw=f.wp.ranged;
       txt(c,'CLOSE ATTACK ('+kh('J')+'): '+(cw?'Punch (melee)':f.wp.name+' (melee)'),x,129,11,'#ffe9b0','left','#000',3);
       txt(c,'RANGED ATTACK ('+kh('H')+'): '+(cw?f.wp.name+' (ranged)':RB[f.sp.id].name+' (ranged)'),x,142,11,'#bfeaff','left','#000',3);
-      txt(c,'WEAPON SKILL ('+kh('L')+'): '+f.wp.skill.name,x,155,11,'#d8ffd8','left','#000',3);
-      txt(c,'ULTIMATE ('+kh('O')+'): '+CULT[f.sp.id].name,x,168,11,'#ffd0f0','left','#000',3);
+      txt(c,'ULTIMATE ('+kh('O')+'): '+CULT[f.sp.id].name,x,155,11,'#ffd0f0','left','#000',3);
     }else txt(c,f.wp.name+(f.wp.ranged?' (ranged)':' (melee)'),ax,88,11,'#ffe9b0',flip?'right':'left','#000',3);
     let by=f.player?192:106;for(const k in f.buffs)if(f.buffs[k]>0){txt(c,{atk:'RAGE',spd:'FRENZY',def:'ARMOR UP'}[k]+' '+Math.ceil(f.buffs[k]),ax,by,12,'#ffd24a',flip?'right':'left','#000',3);by+=14}
   };
@@ -681,19 +664,20 @@ function drawHUD(c,t){
   if(p.combo>=2){const s=1+Math.min(.5,p.combo*.05);txt(c,p.combo+' HIT COMBO',22+0,230,26*s,'#ffd24a','left','#7a2a00',6)}
   G.toasts.forEach((q,k)=>{const a=Math.min(1,(3-q.t)*2,q.t*5);c.globalAlpha=a;rr(c,250,120+k*34,460,28,10);c.fillStyle='rgba(10,5,30,.8)';c.fill();txt(c,q.text,480,134+k*34,15,q.col,'center','#000',3);c.globalAlpha=1});
 }
+/* touch buttons only hide after a REAL gamepad button press and when no finger has touched recently */
+function touchHidden(){return GP.active&&ptrs.size===0&&nowMs()-lastTouch>2500}
 function drawTouch(c,t){
-  if(!touchMode||GP.active||(G.battle&&!G.touchSlot))return;
+  if(!touchMode||touchHidden()||(G.battle&&!G.touchSlot))return;
   c.save();
   for(const b of TB){
     const on=inp.held[b.n];c.globalAlpha=on?.9:.62;
     c.beginPath();c.arc(b.x,b.y,b.r,0,TAU);c.fillStyle=b.c?(on?b.c:'rgba(20,10,50,.78)'):(on?'#9a8aff':'rgba(20,10,50,.7)');c.fill();
     c.lineWidth=4;c.strokeStyle=b.c||'#9a8aff';c.stroke();
     c.fillStyle='#fff';
-    if((b.n==='skill'||b.n==='ult'||b.n==='ranged')&&G&&G.p){const f=G.p,cd=Math.max(0,f.cd[b.n]),mx=f.cdMax[b.n]||1;
+    if((b.n==='ult'||b.n==='ranged')&&G&&G.p){const f=G.p,cd=Math.max(0,f.cd[b.n]),mx=f.cdMax[b.n]||1;
       if(cd>0){c.save();c.globalAlpha=.8;c.beginPath();c.moveTo(b.x,b.y);c.arc(b.x,b.y,b.r-2,-Math.PI/2+TAU*(1-cd/mx),-Math.PI/2+TAU);c.closePath();c.fillStyle='rgba(0,0,0,.72)';c.fill();c.restore()}
       else{c.globalAlpha=.95;c.beginPath();c.arc(b.x,b.y,b.r+4+Math.sin(time*8)*2,0,TAU);c.strokeStyle=b.c;c.lineWidth=3;c.stroke();c.globalAlpha=on?.9:.75}
       if(cd>0){c.globalAlpha=.95;txt(c,Math.ceil(cd)+'s',b.x,b.y-b.r*.28,15,'#fff','center','#000',4);c.globalAlpha=.9}}
-    if(b.n==='special'&&G&&G.p){const f=G.p,fr=Math.min(1,f.en/50);c.save();c.beginPath();c.arc(b.x,b.y,b.r-2,0,TAU);c.clip();c.globalAlpha=.55;c.fillStyle=b.c;c.fillRect(b.x-b.r,b.y+b.r-b.r*2*fr,b.r*2,b.r*2*fr);c.restore();if(fr>=1){c.beginPath();c.arc(b.x,b.y,b.r+4+Math.sin(time*8)*2,0,TAU);c.strokeStyle=b.c;c.lineWidth=3;c.stroke()}}
     c.globalAlpha=.98;
     if(b.l){const n=b.l.length,fs=b.r>=48?14:b.r>=36?12:b.r>=32?10.5:11;
       b.l.forEach((ln,k)=>{const last=k===n-1&&n>1&&ln.length===1;
@@ -773,7 +757,7 @@ const DAILY_POOL=[
  {id:'combo5',t:'Land a 5-hit combo',ev:'combo',max:1,tgt:5,r:{c:45,x:40}},
  {id:'perfect1',t:'Win a fight without taking a hit',ev:'perfect',tgt:1,r:{c:80,x:70,p:1}},
  {id:'ko8',t:'Defeat 8 enemies',ev:'ko',tgt:8,r:{c:60,x:50}},
- {id:'skill8',t:'Use weapon skills 8 times',ev:'skill',tgt:8,r:{c:50,x:45}},
+ {id:'battle2',t:'Play 2 Battle matches',ev:'battle',tgt:2,r:{c:50,x:45}},
  {id:'dmg800',t:'Deal 800 damage',ev:'damage',tgt:800,r:{c:55,x:50}},
  {id:'block15',t:'Block 15 attacks',ev:'block',tgt:15,r:{c:45,x:40}},
  {id:'dodge10',t:'Dodge 10 attacks',ev:'dodge',tgt:10,r:{c:50,x:45}}];
@@ -798,6 +782,7 @@ function hashS(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCo
 function ensureDay(){const m=mis(),t=todayStr();if(m.day!==t||!Array.isArray(m.d)||m.d.length!==3){
   const rn=mkRng(hashS(t)),pool=DAILY_POOL.slice(),pick=[];while(pick.length<3){pick.push(pool.splice((rn()*pool.length)|0,1)[0])}
   m.day=t;m.d=pick.map(d=>({id:d.id,p:0,cl:false}));m.bonusCl=false}
+  if(m.d.some(q=>!DP[q.id])){const have=new Set(m.d.map(q=>q.id).filter(i=>DP[i])),pool=DAILY_POOL.filter(d=>!have.has(d.id));m.d=m.d.map(q=>{if(DP[q.id])return q;const d=pool.splice((Math.random()*pool.length)|0,1)[0];return{id:d.id,p:0,cl:false}})}
   m.st=m.st||{};m.ach=m.ach||{};m.streak=+m.streak||0;m.last=m.last||''}
 function track(ev,n){
   try{ensureDay();const m=mis();n=n==null?1:n;
@@ -839,7 +824,6 @@ const demos=SPECIES.map((sp,i)=>{const f=mkF(i,0,1);f.demo=true;return f});
 function drawDemo(c,i,x,y,sc,face,t,atkOn,wp,gear){const f=demos[i];f.gear=gear?save.armor:null;f.x=x;f.y=y;f.sc=SPECIES[i].sc*sc;f.face=face;f.onGround=true;f.t=t+i;f.vx=0;f.flash=0;f.wp=wp&&wp.id!=='fists'?wp:null;f.boomOut=false;
   const cyc=(t*.8+i*.37)%3;f.atk=null;
   if(atkOn&&cyc<.5)f.atk=wp?{type:'punch',style:wp.style,t:cyc/.5*wp.dur,hs:wp.hs,he:wp.he,dur:wp.dur,range:wp.range}:{type:'punch',t:cyc*.6,hs:.07,he:.18,dur:.3,range:80};
-  if(atkOn&&cyc>=1.2&&cyc<1.55)f.atk={type:'kick',t:(cyc-1.2)*1.1,hs:.14,he:.27,dur:.46,range:98};
   updatePose(f,1/60);drawFighter(c,f)}
 const MENU_ARENA={ramps:[]};
 function menuBG(c,t,ai){const keep=ARENA;ARENA=ARENAS[ai==null?0:ai];ARENA.draw(ARENA,t,0);ARENA=keep}
@@ -873,17 +857,17 @@ S.how=mkScene({back(){go(S.title)},pg:0,enter(){this.pg=0;this.build()},
     if(!this.pg){
       txt(c,'HOW TO PLAY - CONTROLS',480,36,30,'#ffd24a','center','#000',7);
       txt(c,'ACTION',44,66,12,'#bfe','left');txt(c,GP.active?'CONTROLLER':'KEYBOARD',250,66,12,'#bfe','left');txt(c,'iPAD BUTTON',420,66,12,'#bfe','left');txt(c,'WHAT IT DOES',590,66,12,'#bfe','left');
-      const L=[['MOVE','A / D  or  ◀ ▶','◀ ▶ pad','Walk left and right','#fff'],['JUMP','W / ↑ / Space','JUMP','Hop over attacks and shots','#fff'],
-       ['CLOSE ATTACK','J  or  Z','CLOSE ATTACK','Melee hit with your weapon (short range)','#ff9a5a'],['RANGED ATTACK','H  or  B','RANGED ATTACK','Shoots a bolt/arrow/boomerang. Short cooldown','#7ad8ff'],
-       ['KICK','K  or  X','KICK','Strong melee kick, launches foes','#ffc23a'],['BLOCK','Hold S / ↓ / Shift','BLOCK','Stops damage until shield breaks','#7aff9a'],
-       ['DODGE','U  or  V','DODGE','Quick roll - cannot be hit','#7ad8ff'],['WEAPON SKILL','L','WEAPON SKILL','Your weapon\'s special move (cooldown)','#7aff9a'],
-       ['ULTIMATE','O','ULTIMATE','Your creature\'s power move (long cooldown)','#ff9ae0'],['NITRO','I  or  C','NITRO','Creature special. Needs half a nitro bar','#c08aff'],['PAUSE','P or Esc','II button (top)','Pause menu','#fff']];
-      const PL=['L-stick / D-pad','A  or  D-pad ↑','X','Y','B','Hold LB','LT','RB','RT','R-stick click / Back','Start'];
-      L.forEach((r,i)=>{const y=90+i*32;txt(c,r[0],44,y,16,r[4],'left','#000',4);txt(c,GP.active?PL[i]:r[1],250,y,GP.active?14:15,GP.active?'#7ad8ff':'#fff','left');txt(c,r[2],420,y,13,'#ffe9b0','left');txt(c,r[3],590,y,12,'#cfe','left')});
-      wrapText(c,'Every weapon is CLOSE or RANGED. Bow and Boomerang are ranged weapons: H shoots them and J becomes a quick punch. With any other weapon, H fires your creature\'s own bolt.',44,432,872,16,13,'#ffe9b0')}
+      const L=[['MOVE','A / D  or  ◀ ▶','◀ ▶ (left)','Walk left and right','#fff'],['JUMP','W / ↑ / Space','JUMP (right)','Hop over attacks and shots','#fff'],
+       ['CLOSE ATTACK','J  or  Z','ATTACK','Melee hit with your weapon (short range)','#ff9a5a'],['RANGED ATTACK','H  or  B','RANGED + timer','Shoots a bolt/arrow/boomerang. Short cooldown','#7ad8ff'],
+       ['BLOCK','Hold S / ↓ / Shift','BLOCK (hold)','Stops damage until shield breaks','#7aff9a'],
+       ['DODGE','U  or  V','DODGE','Quick roll - cannot be hit','#7ad8ff'],
+       ['ULTIMATE','O','ULTIMATE + timer','Your creature\'s power move (long cooldown)','#ff9ae0'],['PAUSE','P or Esc','II button (top)','Pause menu','#fff']];
+      const PL=['L-stick / D-pad','A  or  D-pad ↑','X','Y','Hold LB','LT','RT','Start'];
+      L.forEach((r,i)=>{const y=96+i*38;txt(c,r[0],44,y,16,r[4],'left','#000',4);txt(c,GP.active?PL[i]:r[1],250,y,GP.active?14:15,GP.active?'#7ad8ff':'#fff','left');txt(c,r[2],420,y,13,'#ffe9b0','left');txt(c,r[3],590,y,12,'#cfe','left')});
+      wrapText(c,'iPAD TOUCH: ◀ ▶ on the left. On the right: JUMP, ATTACK, RANGED and ULTIMATE (both show cooldown timers) plus small BLOCK and DODGE. Every weapon is CLOSE or RANGED. Bow and Boomerang are ranged weapons: H shoots them and J becomes a quick punch. With any other weapon, H fires your creature\'s own bolt.',44,418,872,16,13,'#ffe9b0')}
     else if(this.pg===1){
       txt(c,'HOW TO PLAY - GUIDE',480,36,30,'#ffd24a','center','#000',7);
-      const G2=[['BARS','LIFE (green) is your health. ARMOR (blue) cuts damage and its plating wears down, then slowly regrows. NITRO fills as you fight.'],
+      const G2=[['BARS','LIFE (green) is your health. ARMOR (blue) cuts damage and its plating wears down, then slowly regrows. Use your ULTIMATE and RANGED attack whenever their timers finish.'],
        ['UPGRADES','Win battles for XP + coins. Level up to earn points, then spend them on LIFE (health, regen, lifesteal), ARMOR, SPEED (move, attack) and POWER.'],
        ['ARMOR GEAR','Buy and upgrade a HELM, CHEST ARMOR and GLOVES & BOOTS with coins. You can see them on your creature!'],
        ['STORY','30 levels, 6 chapters. Each level is tougher. Bosses have 3 phases and get angry when hurt. Use difficulty on the title screen.'],
@@ -893,15 +877,15 @@ S.how=mkScene({back(){go(S.title)},pg:0,enter(){this.pg=0;this.build()},
       wrapText(c,'Tip: use RANGED ATTACK to chip foes from far away, CLOSE ATTACK up close, and BLOCK or DODGE when they swing!',44,446,872,18,14,'#ffe9b0')}
     else if(this.pg===3){
       txt(c,'HOW TO PLAY - CONTROLLER (Xbox / standard gamepad)',480,36,26,'#ffd24a','center','#000',7);
-      const T=[['MOVE','Left stick or D-pad','#fff'],['JUMP','A, D-pad up or stick up','#fff'],['CLOSE ATTACK','X','#ff9a5a'],['RANGED ATTACK','Y','#7ad8ff'],['KICK','B','#ffc23a'],['BLOCK','Hold LB  (LB + A on a thin ledge = drop through)','#7aff9a'],['DODGE','LT','#7ad8ff'],['WEAPON SKILL','RB','#7aff9a'],['ULTIMATE','RT','#ff9ae0'],['NITRO','Right-stick click or Back / View','#c08aff'],['PAUSE','Start','#fff']];
+      const T=[['MOVE','Left stick or D-pad','#fff'],['JUMP','A, D-pad up or stick up','#fff'],['CLOSE ATTACK','X','#ff9a5a'],['RANGED ATTACK','Y','#7ad8ff'],['BLOCK','Hold LB  (LB + A on a thin ledge = drop through)','#7aff9a'],['DODGE','LT','#7ad8ff'],['ULTIMATE','RT','#ff9ae0'],['PAUSE','Start','#fff']];
       T.forEach((r,i)=>{const y=76+i*28;txt(c,r[0],60,y,16,r[2],'left','#000',4);txt(c,r[1],300,y,15,'#fff','left')});
       wrapText(c,'MENUS: D-pad or left stick moves, A confirms, B goes back, Start also confirms (or resumes when paused). In setup screens LB / RB change the highlighted choice backward / forward.',60,368,840,17,13.5,'#ffe9b0');
       wrapText(c,'BATTLE: set a slot to GAMEPAD 1-4 (controllers are assigned to free slots automatically when connected). Up to 4 pads plus keyboards and touch. Works with iPad / iPadOS Safari when the controller is paired over Bluetooth. Touch buttons hide while you play with a controller and return when you touch the screen.',60,408,840,17,13.5,'#d8ffd8')}
     else{
       txt(c,'BATTLES, ARENAS & WEAPONS',480,36,28,'#ffd24a','center','#000',7);
       const L3=[['BATTLE MODE','Up to 6 fighters: free-for-all, 2v2v2 or 3v3. Mix CPU fighters with up to 2 keyboard players (P1 + P2) and a touch player. Win by STOCKS, KO RACE or TIMED.'],
-       ['P1 KEYS','A/D move · W jump · S block · F close · G ranged · R kick · E skill · T ult · C nitro · Q dodge'],
-       ['P2 KEYS','←/→ move · ↑ jump · ↓ block · Num1 close · Num2 ranged · Num3 kick · Num4 skill · Num5 ult · Num6 nitro · Num0 dodge (or . / , ; \' N M)'],
+       ['P1 KEYS','A/D move · W jump · S block · F close · G ranged · T ult · Q dodge'],
+       ['P2 KEYS','←/→ move · ↑ jump · ↓ block · Num1 close · Num2 ranged · Num5 ult · Num0 dodge (or . / \' M)'],
        ['PLATFORMS','Big arenas have ledges, ramps and moving lifts. Jump up through any ledge. On a THIN ledge, hold BLOCK + JUMP to drop down. Firm (thick) ledges can not be dropped through.'],
        ['CAMERA','The camera zooms out and pans to keep every fighter in view, and zooms in when you are close.'],
        ['WEAPONS','24 weapons. The Armory shows SPEED, POWER, REACH, COMBO and WEIGHT bars plus PROS and CONS. Heavy weapons slow you down; combo weapons end in a bigger finisher.'],
@@ -945,9 +929,8 @@ S.select=mkScene({cols:5,cfg:{},
     [['HEALTH',sp.hp/1.3],['POWER',sp.pow/1.25],['SPEED',sp.spd/1.15],['JUMP',sp.jmp/1.25]].forEach((s,k)=>{txt(c,s[0],250,356+k*20,12,'#bfe','left');drawBar(c,320,350+k*20,130,10,s[1],'#ffb02a',false)});
     wrapText(c,sp.bio,250,436,200,16,12,'#ffe9b0');
     c.fillStyle='rgba(10,5,40,.6)';rr(c,480,306,450,140,16);c.fill();
-    txt(c,'NITRO SPECIAL',500,326,14,'#b8a0ff','left');txt(c,sp.sp.name,500,350,24,sp.glow,'left','#000',5);
-    txt(c,{proj:'Ranged blast',dash:'Charging dash',slam:'Ground-shaking shockwave',flurry:'Multi-hit flurry'}[sp.sp.type]+(sp.sp.heal?' + heals you':''),500,378,14,'#fff','left');
-    txt(c,'ULT: '+CULT[sp.id].name+' - '+CULT[sp.id].desc,500,402,13,'#ffd0f0','left');
+    txt(c,'ULTIMATE',500,326,14,'#b8a0ff','left');txt(c,CULT[sp.id].name,500,350,24,sp.glow,'left','#000',5);
+    wrapText(c,CULT[sp.id].desc+' (cooldown '+CULT[sp.id].cd+'s)',500,368,420,18,14,'#fff');
     txt(c,lock?'Locked: clear Story level '+unlockLevel(i):'Tap again or press ENTER to choose',500,428,14,lock?'#ff9a8a':'#9aff9a','left')}});
 // Arena select (duel)
 S.arenaSel=mkScene({cols:4,onPick:null,onBack:null,back(){if(this.onBack){const cb=this.onBack;this.onPick=null;this.onBack=null;cb()}else openOpp()},
@@ -1007,8 +990,8 @@ const BMODES={ffa6:{n:6,name:'FREE-FOR-ALL (6)',team:i=>i},ffa4:{n:4,name:'FREE-
 const BMORD=['ffa6','ffa4','ffa3','2v2v2','3v3','2v2','1v1'];
 const BRULES={stocks:{name:'STOCKS (3 lives)',lim:3},race:{name:'KO RACE (first to 5)',lim:5},time:{name:'TIMED (90 sec)',lim:90}},BRORD=['stocks','race','time'];
 const CTLS=['AI','P1 KEYS','P2 KEYS','TOUCH','PAD 1','PAD 2','PAD 3','PAD 4','OFF'],CTLN={'PAD 1':'GAMEPAD 1','PAD 2':'GAMEPAD 2','PAD 3':'GAMEPAD 3','PAD 4':'GAMEPAD 4','AI':'CPU (AI)','P1 KEYS':'P1: WASD KEYS','P2 KEYS':'P2: ARROW KEYS','TOUCH':'TOUCH SCREEN','OFF':'EMPTY'};
-const KM1={KeyA:'left',KeyD:'right',KeyW:'jump',KeyS:'shield',KeyF:'punch',KeyG:'ranged',KeyR:'kick',KeyQ:'dodge',KeyE:'skill',KeyT:'ult',KeyC:'special'};
-const KM2={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'jump',ArrowDown:'shield',Numpad1:'punch',Period:'punch',Numpad2:'ranged',Slash:'ranged',Numpad3:'kick',Comma:'kick',Numpad0:'dodge',KeyM:'dodge',Numpad4:'skill',Semicolon:'skill',Numpad5:'ult',Quote:'ult',Numpad6:'special',KeyN:'special'};
+const KM1={KeyA:'left',KeyD:'right',KeyW:'jump',KeyS:'shield',KeyF:'punch',KeyG:'ranged',KeyQ:'dodge',KeyT:'ult'};
+const KM2={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'jump',ArrowDown:'shield',Numpad1:'punch',Period:'punch',Numpad2:'ranged',Slash:'ranged',Numpad0:'dodge',KeyM:'dodge',Numpad5:'ult',Quote:'ult'};
 const BDEF_W=['sword','katana','axe','spear','bow','mace'];
 const BS={mode:'ffa4',rule:'stocks',arena:0,ai:.55,slots:[0,1,2,3,4,5].map(i=>({hero:i%SPECIES.length,wp:BDEF_W[i],ctl:i===0?(touchMode?'TOUCH':'P1 KEYS'):'AI'}))};
 function startBattle(bs){
@@ -1022,7 +1005,7 @@ function startBattle(bs){
     const f=mkF(sl.hero,x,x<ARENA.ww/2?1:-1,{player:human,team,wp:WI[sl.wp]||WI.sword,hpm:1.25,ai:human?null:mkAI(bs.ai,false,{}),en:25});
     f.slot=o.i;f.bn=(human?'P':'CPU')+(o.i+1);f.tc=TCOL[M.team(o.i)];f.kos=0;f.deaths=0;f.dmgOut=0;f.stocks=bs.rule==='stocks'?R0.lim:null;f.elim=false;f.koT=0;f.lock=1.6;f.ctl=sl.ctl;
     if(human){if(sl.ctl==='TOUCH')f.touch=true;else if(/^PAD/.test(sl.ctl)){f.gp={held:{},press:{},own:{}};f.padn=+sl.ctl.slice(4)}else f.inp={held:{},press:{}}}
-    else{f.cd.skill=rnd(1,4)*f.cdM;f.cd.ult=rnd(3,7)*f.cdM;f.cd.ranged=rnd(.3,1.2)}
+    else{f.cd.ult=rnd(3,7)*f.cdM;f.cd.ranged=rnd(.3,1.2)}
     return f});
   G.touchSlot=G.fs.some(f=>f.touch);
   const kb=G.fs.filter(f=>f.inp),split=kb.length>=2||(kb.length>=1&&G.touchSlot);G.kbMap={};
@@ -1050,7 +1033,7 @@ function endBattle(wt){
 function respawnF(f){
   const sp=ARENA.spawns||[800];const x=sp[(Math.random()*sp.length)|0]+rnd(-60,60);
   f.ko=false;f.out=false;f.hp=f.maxhp;f.chip=f.maxhp;f.x=clamp(x,60,ARENA.ww-60);f.y=Math.min(ARENA.wtop+80,-80);f.vx=0;f.vy=0;f.rot=0;f.rotV=0;f.atk=null;f.stun=0;f.shield=false;f.sh=100;f.dodgeT=0;f.onGround=false;f.plat=null;f.inv=2.4;f.lock=0;
-  f.ap=f.apMax;for(const k in f.buffs)f.buffs[k]=0;f.cd.skill=Math.max(f.cd.skill,2);f.en=Math.max(f.en,25);f.boomOut=false;f.combo=0;
+  f.ap=f.apMax;for(const k in f.buffs)f.buffs[k]=0;f.boomOut=false;f.combo=0;
   ring(f.x,f.y,f.tc,80);SND.play('ready')}
 function humanIn(f){
   const src=f.touch?inp:(f.gp||f.inp);f.in.l=!!src.held.left;f.in.r=!!src.held.right;f.in.sh=!!src.held.shield;
@@ -1093,11 +1076,10 @@ function drawBattleHUD(c,t){
     c.fillStyle=f.tc;rr(c,x,6,7,62,4);c.fill();
     txt(c,f.bn+' '+SPECIES[f.idx].name,x+13,19,pw<160?11:12,'#fff','left','#000',3);
     const r=Math.max(0,f.hp/f.maxhp);drawBar(c,x+13,27,pw-21,13,r,hpCol(c,r),false,Math.max(0,f.chip/f.maxhp));
-    drawBar(c,x+13,44,pw-21,5,f.en/100,f.en>=50?'#c88aff':'#7a5aff',false);
     if(f.stocks!=null){for(let k=0;k<B.lim;k++){c.beginPath();c.arc(x+19+k*13,59,4.6,0,TAU);if(k<f.stocks){c.fillStyle=f.tc;c.fill();c.lineWidth=1.5;c.strokeStyle='#fff';c.stroke()}else{c.lineWidth=1.5;c.strokeStyle='rgba(255,255,255,.4)';c.stroke()}}}
     else txt(c,'KOs '+f.kos,x+13,59,12,'#ffe27a','left','#000',3);
-    const sk=f.cd.skill<=0,ul=f.cd.ult<=0;
-    c.fillStyle=sk?'#5aff9a':'rgba(255,255,255,.2)';c.fillRect(x+pw-44,54,10,9);c.fillStyle=ul?'#ff7ac8':'rgba(255,255,255,.2)';c.fillRect(x+pw-30,54,10,9);c.fillStyle=f.en>=50?'#b66bff':'rgba(255,255,255,.2)';c.fillRect(x+pw-16,54,10,9);
+    const ul=f.cd.ult<=0,rg=f.cd.ranged<=0;
+    c.fillStyle=rg?'#4ad0ff':'rgba(255,255,255,.2)';c.fillRect(x+pw-30,48,12,12);c.fillStyle=ul?'#ff7ac8':'rgba(255,255,255,.2)';c.fillRect(x+pw-15,48,12,12);
     c.restore();
     if(f.elim)txt(c,'OUT',x+pw/2,38,22,'#ff8a7a','center','#000',5);else if(f.out||f.ko)txt(c,'RESPAWN',x+pw/2,38,14,'#ffd24a','center','#000',4)});
   // info line
@@ -1108,7 +1090,7 @@ function drawBattleHUD(c,t){
   c.beginPath();c.arc(W-30,112,16,0,TAU);c.fillStyle='rgba(10,5,30,.6)';c.fill();c.strokeStyle='#fff';c.lineWidth=2;c.stroke();c.fillStyle='#fff';c.fillRect(W-36,104,4,16);c.fillRect(W-27,104,4,16);
   G.toasts.forEach((q,k)=>{const a=Math.min(1,(3-q.t)*2,q.t*5);c.globalAlpha=a;rr(c,250,130+k*34,460,28,10);c.fillStyle='rgba(10,5,30,.8)';c.fill();txt(c,q.text,480,144+k*34,15,q.col,'center','#000',3);c.globalAlpha=1});
   if(G.t<6&&G.state!=='end'){const hs=G.fs.filter(f=>f.inp||f.gp);let y=132;c.globalAlpha=Math.min(1,(6-G.t));
-    for(const f of hs){const t1=f.gp?PADTXT:f.legacy?'A/D move · W jump · S block (+W drops through thin ledges) · J close · H ranged · K kick · L skill · O ult · I nitro · U dodge':f.ctl==='P1 KEYS'?'A/D move · W jump · S block (+W drops) · F close · G ranged · R kick · E skill · T ult · C nitro · Q dodge':'←/→ move · ↑ jump · ↓ block (+↑ drops) · Num1 close · Num2 ranged · Num3 kick · Num4 skill · Num5 ult · Num6 nitro · Num0 dodge';
+    for(const f of hs){const t1=f.gp?PADTXT:f.legacy?'A/D move · W jump · S block (+W drops through thin ledges) · J close · H ranged · O ult · U dodge':f.ctl==='P1 KEYS'?'A/D move · W jump · S block (+W drops) · F close · G ranged · T ult · Q dodge':'←/→ move · ↑ jump · ↓ block (+↑ drops) · Num1 close · Num2 ranged · Num5 ult · Num0 dodge';
       txt(c,f.bn+': '+t1,480,y,12,'#fff','center','#000',4);y+=16}c.globalAlpha=1}
 }
 /* setup + result scenes */
@@ -1148,8 +1130,8 @@ S.battle=mkScene({cols:3,note:'',noteT:0,back(){go(S.title)},
       txt(c,'SLOT '+(i+1),66,y+12,12,'#fff','left','#000',3);txt(c,off?'not in mode':TNAME[tm],66,y+27,12,TCOL[tm],'left','#000',3);c.restore()});
     uiDrawBtns(c,this,t);
     txt(c,'Tap a button to change it (tap the left edge to go back). Up to 6 fighters: mix CPU, P1 keys, P2 keys and touch.',480,452,13,'#cfe','center','#000',4);
-    txt(c,'P1: A/D move  W jump  S block  F close  G ranged  R kick  E skill  T ult  C nitro  Q dodge',480,474,12,'#ffe9b0','center','#000',3);
-    txt(c,'P2: ←/→ move  ↑ jump  ↓ block  Num1 close  Num2 ranged  Num3 kick  Num4 skill  Num5 ult  Num6 nitro  Num0 dodge',480,491,12,'#bfeaff','center','#000',3);
+    txt(c,'P1: A/D move  W jump  S block  F close  G ranged  T ult  Q dodge',480,474,12,'#ffe9b0','center','#000',3);
+    txt(c,'P2: ←/→ move  ↑ jump  ↓ block  Num1 close  Num2 ranged  Num5 ult  Num0 dodge',480,491,12,'#bfeaff','center','#000',3);
     txt(c,'Hold BLOCK + JUMP on a thin ledge to drop through it.  One keyboard player uses the normal keys (WASD/arrows, J K H L O I).',480,508,12,'#d8ffd8','center','#000',3);
     if(this.noteT>0){this.noteT-=1/60;txt(c,this.note,480,430,18,'#ff8a7a','center','#000',5)}}});
 function showBattleResult(){
@@ -1181,7 +1163,7 @@ const BOOSTS=[
  {k:'rev',n:'Phoenix Feather',d:'Come back once at 50% life',cost:220,add:1,col:'#ff9a3a',g:'♥'},
  {k:'pwr',n:'Power Elixir',d:'+15% damage for 3 battles',cost:120,add:3,col:'#ff6a5a',g:'⚔'},
  {k:'arm',n:'Armor Polish',d:'+10 armor for 3 battles',cost:100,add:3,col:'#9ad0ff',g:'◆'},
- {k:'nit',n:'Nitro Tonic',d:'Start with full nitro, 3 battles',cost:80,add:3,col:'#c88aff',g:'⚡'},
+ {k:'nit',n:'Haste Tonic',d:'Cooldowns 30% faster, 3 battles',cost:80,add:3,col:'#c88aff',g:'⚡'},
  {k:'tr1',n:'Training Session',d:'Hero gains +60 XP now',cost:100,xp:60,col:'#7aff9a',g:'+'},
  {k:'tr2',n:'Hero Camp',d:'Hero gains +300 XP now',cost:450,xp:300,col:'#5aff9a',g:'++'}];
 S.boosts=mkScene({cols:2,note:'',noteT:0,back(){go(S.shop)},
@@ -1229,15 +1211,16 @@ S.shop=mkScene({cols:2,note:'',noteT:0,back(){go(S.title)},
 
 /* ================= GAMEPAD (standard mapping, Xbox) ================= */
 const GP={active:false,own:{},prev:[],rep:[],toasts:[],n:0};
-const GPH={J:'X',H:'Y',K:'B',L:'RB',O:'RT',I:'RS',U:'LT',S:'LB'};
+const GPH={J:'X',H:'Y',O:'RT',U:'LT',S:'LB'};
 const kh=k=>GP.active?(GPH[k]||k):k;
-const PADTXT='stick/D-pad move · A or ↑ jump · X close · Y ranged · B kick · RB skill · RT ultimate · LB block (+A drops) · LT dodge · RS click/Back nitro';
+const PADTXT='stick/D-pad move · A or ↑ jump · X close · Y ranged · RT ultimate · LB block (+A drops) · LT dodge';
 function gpList(){const l=[];try{const a=navigator.getGamepads?navigator.getGamepads():[];for(const g of a)if(g&&g.connected!==false)l.push(g)}catch(e){}return l.sort((a,b)=>a.index-b.index)}
-function gpRead(g){
+function gpRead(g,stickOk){
   const B=i=>{const b=g.buttons&&g.buttons[i];return !!b&&(b.pressed||b.value>.5)};
   let ax=g.axes&&g.axes[0]||0,ay=g.axes&&g.axes[1]||0;if(Math.hypot(ax,ay)<.25){ax=0;ay=0} // deadzone
-  return{l:ax<-.45||B(14),r:ax>.45||B(15),u:ay<-.55||B(12),d:ay>.55||B(13),dd:B(13),A:B(0),Bb:B(1),X:B(2),Y:B(3),LB:B(4),RB:B(5),LT:B(6),RT:B(7),back:B(8),start:B(9),RS:B(11)}}
-function gpWant(s){return{left:s.l,right:s.r,jump:s.u||s.A,shield:s.LB||s.dd,punch:s.X,kick:s.Bb,ranged:s.Y,special:s.RS||s.back,skill:s.RB,ult:s.RT,dodge:s.LT}}
+  if(stickOk===false){ax=0;ay=0}
+  return{pl:B(14),pr:B(15),pu:B(12),pd:B(13),btn:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15].some(B),l:ax<-.45||B(14),r:ax>.45||B(15),u:ay<-.55||B(12),d:ay>.55||B(13),dd:B(13),A:B(0),Bb:B(1),X:B(2),Y:B(3),LB:B(4),RB:B(5),LT:B(6),RT:B(7),back:B(8),start:B(9),RS:B(11)}}
+function gpWant(s){return{left:s.l,right:s.r,jump:s.u||s.A,shield:s.LB||s.dd,punch:s.X,ranged:s.Y,ult:s.RT,dodge:s.LT}}
 function gpApply(t,want,own){for(const n in want){if(want[n]){if(!t.held[n]){t.held[n]=true;t.press[n]=true;own[n]=1}}else if(own[n]){t.held[n]=false;own[n]=0}}}
 function gpToast(text){GP.toasts.push({text,t:0});if(GP.toasts.length>3)GP.toasts.shift()}
 const gpName=g=>{let n=(g.id||'Controller').replace(/\(.*?\)/g,'').replace(/vendor:.*|STANDARD GAMEPAD/i,'').trim();return n.length>26?n.slice(0,26):(n||'Controller')};
@@ -1247,12 +1230,13 @@ function gpAutoAssign(){
     const i=BS.slots.findIndex((s,j)=>j<bsActive()&&s.ctl==='AI');if(i>=0){BS.slots[i].ctl='PAD '+k;gpToast('Gamepad '+k+' -> Battle slot '+(i+1))}}}
 const GPKEY={l:'ArrowLeft',r:'ArrowRight',u:'ArrowUp',d:'ArrowDown'};
 function pollGamepads(dt){
-  const list=gpList();GP.n=list.length;const st=list.map(gpRead);
+  const list=gpList();GP.n=list.length;const sOk=!touchMode||GP.active;const st=list.map(g=>gpRead(g,sOk));
   const gameplay=scene===S.fight&&G&&!G.paused&&G.state!=='end'&&G.state!=='perk';
-  let rise=false,anyHeld=false;
-  st.forEach((s,i)=>{const pv=GP.prev[i]||{};for(const k in s){if(s[k]){anyHeld=true;if(!pv[k])rise=true}}});
+  let rise=false,realRise=false;
+  st.forEach((s,i)=>{const pv=GP.prev[i]||{};for(const k in s){if(s[k]&&!pv[k]){rise=true;if(k==='btn')realRise=true}}});
   if(rise){SND.resume();SND.startPending()}
-  if(anyHeld&&!GP.active){GP.active=true}
+  // only a real BUTTON press (never stick drift) activates gamepad mode; never while a finger is down / recently touched
+  if(realRise&&!GP.active&&ptrs.size===0&&nowMs()-lastTouch>2500)GP.active=true
   if(gameplay){
     const startEdge=st.some((s,i)=>s.start&&!(GP.prev[i]||{}).start);
     if(G.battle){
@@ -1262,7 +1246,7 @@ function pollGamepads(dt){
         gpApply(f.gp,gpWant(st[f.padn-1]),f.gp.own)}
     }else{
       const m={};st.forEach(s=>{const w=gpWant(s);for(const n in w)m[n]=m[n]||w[n]});
-      for(const n of['left','right','jump','shield','punch','kick','ranged','special','skill','ult','dodge'])m[n]=!!m[n];
+      for(const n of['left','right','jump','shield','punch','ranged','ult','dodge'])m[n]=!!m[n];
       for(const n in m){if(m[n]){if(!inp.held[n]){press(n);GP.own[n]=1}}else if(GP.own[n]){release(n);GP.own[n]=0}}}
     if(startEdge)pauseGame();
   }else{
@@ -1369,8 +1353,7 @@ S.armory=mkScene({cols:6,cont:null,contLabel:'FIGHT!',backFn:null,hero:0,view:1,
     txt(c,'CONS',528,337,12,'#ff8a7a','left','#000',3);wrapText(c,wCons(w).join(' · '),572,330,350,14,11.5,'#ffd8d0');
     txt(c,'J close: ',528,371,11.5,'#ff9a5a','left','#000',3);txt(c,w.ranged?'quick punch (melee)':w.name+' swing'+(w.combo>1?' chain':''),584,371,11.5,'#fff','left');
     txt(c,'H ranged: ',528,386,11.5,'#7ad8ff','left','#000',3);txt(c,w.ranged?w.name+' shot':RB[hero.id].name,590,386,11.5,'#fff','left');
-    txt(c,'L skill: '+w.skill.name,528,401,11.5,w.skill.col,'left','#000',3);txt(c,w.skill.desc+' · '+w.skill.cd+'s',528,415,10.5,'#fff','left');
-    txt(c,'O ult: '+CULT[hero.id].name,528,430,11.5,'#ffa0e0','left','#000',3);txt(c,CULT[hero.id].desc+' · '+CULT[hero.id].cd+'s',528,444,10.5,'#fff','left');
+    txt(c,'O ult: '+CULT[hero.id].name,528,404,11.5,'#ffa0e0','left','#000',3);txt(c,CULT[hero.id].desc+' · '+CULT[hero.id].cd+'s',528,418,10.5,'#fff','left');
     txt(c,own?(eq?'Equipped!':'Owned - tap EQUIP'):'Locked: Story Lv '+w.lvl+' or '+w.cost+' coins',w.ranged?312:302,321.5,11.5,own?'#7aff9a':'#ffd24a','left','#000',3);
     if(this.noteT>0){c.globalAlpha=Math.min(1,this.noteT);rr(c,230,262,420,26,10);c.fillStyle='rgba(10,5,30,.88)';c.fill();txt(c,this.note,440,275,18,'#fff','center','#000',4);c.globalAlpha=1}
     this.act.label=own?(eq?'EQUIPPED ✓':'EQUIP'):'BUY ('+w.cost+' COINS)';this.act.disabled=!own&&save.coins<w.cost;this.act.clickLocked=true;
